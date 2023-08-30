@@ -26,11 +26,11 @@ import java.util.List;
 public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget {
 
     @Unique
-    private static final ButtonTextures AM$PAGE_FORWARD_TEXTURES = new ButtonTextures(
+    private static final ButtonTextures DM$PAGE_FORWARD_TEXTURES = new ButtonTextures(
             new Identifier("recipe_book/page_forward"), new Identifier("recipe_book/page_forward_highlighted")
     );
     @Unique
-    private static final ButtonTextures AM$PAGE_BACKWARD_TEXTURES = new ButtonTextures(
+    private static final ButtonTextures DM$PAGE_BACKWARD_TEXTURES = new ButtonTextures(
             new Identifier("recipe_book/page_backward"), new Identifier("recipe_book/page_backward_highlighted")
     );
 
@@ -64,9 +64,9 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
         int a = (this.parentWidth - 147) / 2 - this.leftOffset;
         int s = (this.parentHeight + 166) / 2;
         this.nextPageButton = new ToggleButtonWidget(a + 14, s, 12, 17, false);
-        this.nextPageButton.setTextures(AM$PAGE_FORWARD_TEXTURES);
+        this.nextPageButton.setTextures(DM$PAGE_FORWARD_TEXTURES);
         this.prevPageButton = new ToggleButtonWidget(a - 35, s, 12, 17, true);
-        this.prevPageButton.setTextures(AM$PAGE_BACKWARD_TEXTURES);
+        this.prevPageButton.setTextures(DM$PAGE_BACKWARD_TEXTURES);
         this.page = 0;
     }
 

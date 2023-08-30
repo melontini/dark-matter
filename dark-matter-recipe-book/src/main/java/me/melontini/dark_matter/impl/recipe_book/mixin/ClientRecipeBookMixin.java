@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.recipe_book.mixin;
 
 import me.melontini.dark_matter.impl.recipe_book.RecipeBookInternals;
+import net.minecraft.class_8786;
 import net.minecraft.client.recipebook.ClientRecipeBook;
 import net.minecraft.client.recipebook.RecipeBookGroup;
 import net.minecraft.recipe.Recipe;
@@ -31,11 +32,11 @@ public class ClientRecipeBookMixin {
     }
 
     @Inject(at = @At("HEAD"), method = "getGroupForRecipe", cancellable = true)
-    private static void dark_matter$getGroupForRecipe(Recipe<?> recipe, CallbackInfoReturnable<RecipeBookGroup> cir) {
-        RecipeBookInternals.getLookups(recipe.getType()).map(functions -> {
+    private static void dark_matter$getGroupForRecipe(class_8786<?> arg, CallbackInfoReturnable<RecipeBookGroup> cir) {
+        RecipeBookInternals.getLookups(arg.comp_1933().getType()).map(functions -> {
             RecipeBookGroup result;
             for (BiFunction<Recipe<?>, DynamicRegistryManager, RecipeBookGroup> function : functions) {
-                if ((result = function.apply(recipe, dark_matter$currentDynamicRegistryManager)) != null) {
+                if ((result = function.apply(arg.comp_1933(), dark_matter$currentDynamicRegistryManager)) != null) {
                     return result;
                 }
             }

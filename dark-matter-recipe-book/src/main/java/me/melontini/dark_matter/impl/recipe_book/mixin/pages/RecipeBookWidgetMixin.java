@@ -4,6 +4,7 @@ import me.melontini.dark_matter.api.base.util.MathStuff;
 import me.melontini.dark_matter.api.recipe_book.interfaces.PaginatedRecipeBookWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
+import net.minecraft.client.gui.screen.ButtonTextures;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.screen.recipebook.RecipeGroupButtonWidget;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
@@ -23,9 +24,16 @@ import java.util.List;
 
 @Mixin(RecipeBookWidget.class)
 public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget {
-    @Shadow
-    @Final
-    protected static Identifier TEXTURE;
+
+    @Unique
+    private static final ButtonTextures AM$PAGE_FORWARD_TEXTURES = new ButtonTextures(
+            new Identifier("recipe_book/page_forward"), new Identifier("recipe_book/page_forward_highlighted")
+    );
+    @Unique
+    private static final ButtonTextures AM$PAGE_BACKWARD_TEXTURES = new ButtonTextures(
+            new Identifier("recipe_book/page_backward"), new Identifier("recipe_book/page_backward_highlighted")
+    );
+
     @Shadow
     protected MinecraftClient client;
     @Shadow
@@ -56,9 +64,9 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
         int a = (this.parentWidth - 147) / 2 - this.leftOffset;
         int s = (this.parentHeight + 166) / 2;
         this.nextPageButton = new ToggleButtonWidget(a + 14, s, 12, 17, false);
-        this.nextPageButton.setTextureUV(1, 208, 13, 18, TEXTURE);
+        this.nextPageButton.setTextures(AM$PAGE_FORWARD_TEXTURES);
         this.prevPageButton = new ToggleButtonWidget(a - 35, s, 12, 17, true);
-        this.prevPageButton.setTextureUV(1, 208, 13, 18, TEXTURE);
+        this.prevPageButton.setTextures(AM$PAGE_BACKWARD_TEXTURES);
         this.page = 0;
     }
 

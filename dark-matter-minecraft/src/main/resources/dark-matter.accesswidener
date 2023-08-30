@@ -21,7 +21,6 @@ transitive-accessible method net/minecraft/client/world/ClientWorld getEntityLoo
 transitive-accessible method net/minecraft/world/World getEntityLookup ()Lnet/minecraft/world/entity/EntityLookup;
 
 transitive-accessible field net/minecraft/entity/Entity world Lnet/minecraft/world/World;
-transitive-accessible field net/minecraft/client/network/ClientPlayNetworkHandler combinedDynamicRegistries Lnet/minecraft/registry/CombinedDynamicRegistries;
 transitive-accessible field net/minecraft/client/particle/Particle collidesWithWorld Z
 transitive-accessible field net/minecraft/client/particle/ParticleManager factories Lit/unimi/dsi/fastutil/ints/Int2ObjectMap;
 transitive-accessible field net/minecraft/client/gui/screen/ingame/CreativeInventoryScreen selectedTab Lnet/minecraft/item/ItemGroup;

@@ -5,9 +5,8 @@ import com.mojang.datafixers.util.Pair;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
-import net.minecraft.client.network.ClientDynamicRegistryType;
+import net.minecraft.client.network.ClientConnectionState;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.client.network.ServerInfo;
 import net.minecraft.client.render.WorldRenderer;
 import net.minecraft.client.world.ClientWorld;
 import net.minecraft.network.ClientConnection;
@@ -18,6 +17,8 @@ import net.minecraft.resource.DataConfiguration;
 import net.minecraft.resource.LifecycledResourceManager;
 import net.minecraft.resource.ResourcePackManager;
 import net.minecraft.resource.VanillaDataPackProvider;
+import net.minecraft.resource.featuretoggle.FeatureFlags;
+import net.minecraft.resource.featuretoggle.FeatureSet;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.SaveLoading;
 import net.minecraft.util.profiler.Profiler;
@@ -65,8 +66,11 @@ public class FakeWorld extends ClientWorld {
             DimensionOptionsRegistryHolder.DimensionsConfig dimensionsConfig = WorldPresets.createDemoOptions(immutable).toConfig(immutable2.get(RegistryKeys.DIMENSION));
             CombinedDynamicRegistries<ServerDynamicRegistryType> combinedDynamicRegistries3 = combinedDynamicRegistries2.with(ServerDynamicRegistryType.DIMENSIONS, dimensionsConfig.toDynamicRegistryManager());
 
-            ClientPlayNetworkHandler networkHandler = new ClientPlayNetworkHandler(MinecraftClient.getInstance(), null, new ClientConnection(NetworkSide.CLIENTBOUND), new ServerInfo("fake_name", "0.0.0.0", true), new GameProfile(UUID.randomUUID(), "fake_profile_ratio"), null);
-            networkHandler.combinedDynamicRegistries = ClientDynamicRegistryType.createCombinedDynamicRegistries().with(ClientDynamicRegistryType.REMOTE, new DynamicRegistryManager.ImmutableImpl(SerializableRegistries.streamDynamicEntries(combinedDynamicRegistries3)).toImmutable());
+            ClientPlayNetworkHandler networkHandler = new ClientPlayNetworkHandler(MinecraftClient.getInstance(), new ClientConnection(NetworkSide.CLIENTBOUND),
+                    new ClientConnectionState(
+                            new GameProfile(UUID.randomUUID(), "fake_profile_ratio"),
+                            null, new DynamicRegistryManager.ImmutableImpl(SerializableRegistries.streamDynamicEntries(combinedDynamicRegistries3)).toImmutable(),
+                            FeatureSet.of(FeatureFlags.VANILLA), null, null, null));
 
             INSTANCE = new FakeWorld(networkHandler,
                     new Properties(Difficulty.EASY, false, false), World.OVERWORLD, combinedDynamicRegistries3.getPrecedingRegistryManagers(ServerDynamicRegistryType.DIMENSIONS).get(RegistryKeys.DIMENSION_TYPE).entryOf(DimensionTypes.OVERWORLD), 0, 0, null, MinecraftClient.getInstance().worldRenderer, true, 0);

@@ -3,10 +3,10 @@ package me.melontini.dark_matter.impl.recipe_book.mixin;
 import me.melontini.dark_matter.impl.recipe_book.RecipeBookInternals;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
-import net.minecraft.class_8786;
 import net.minecraft.client.recipebook.ClientRecipeBook;
 import net.minecraft.client.recipebook.RecipeBookGroup;
 import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.DynamicRegistryManager;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
@@ -20,13 +20,13 @@ import java.util.function.BiFunction;
 public class ClientRecipeBookMixin {
 
     @Inject(at = @At("HEAD"), method = "getGroupForRecipe", cancellable = true)
-    private static void dark_matter$getGroupForRecipe(class_8786<?> arg, CallbackInfoReturnable<RecipeBookGroup> cir) {
+    private static void dark_matter$getGroupForRecipe(RecipeEntry<?> recipe, CallbackInfoReturnable<RecipeBookGroup> cir) {
         var rm = Optional.ofNullable(MinecraftClient.getInstance().getNetworkHandler())
                 .map(ClientPlayNetworkHandler::getRegistryManager).orElse(null);
-        RecipeBookInternals.getLookups(arg.comp_1933().getType()).map(functions -> {
+        RecipeBookInternals.getLookups(recipe.value().getType()).map(functions -> {
             RecipeBookGroup result;
             for (BiFunction<Recipe<?>, DynamicRegistryManager, RecipeBookGroup> function : functions) {
-                if ((result = function.apply(arg.comp_1933(), rm)) != null) {
+                if ((result = function.apply(recipe.value(), rm)) != null) {
                     return result;
                 }
             }

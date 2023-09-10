@@ -1,6 +1,8 @@
 package me.melontini.dark_matter.api.base.util.classes;
 
-public class MutableTuple<L, R> {
+import java.util.Objects;
+
+public final class MutableTuple<L, R> {
 
     public static <L, R> MutableTuple<L, R> of(L left, R right) {
         return new MutableTuple<>(left, right);
@@ -28,6 +30,19 @@ public class MutableTuple<L, R> {
 
     public void right(R right) {
         this.right = right;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        MutableTuple<?, ?> that = (MutableTuple<?, ?>) o;
+        return Objects.equals(left, that.left) && Objects.equals(right, that.right);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(left, right);
     }
 
     @Override

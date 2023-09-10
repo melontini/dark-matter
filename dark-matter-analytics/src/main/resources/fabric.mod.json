@@ -12,6 +12,9 @@
   "icon": "assets/dark-matter-analytics/icon.png",
   "environment": "*",
   "entrypoints": {
+    "preLaunch": [
+      "me.melontini.dark_matter.impl.analytics.AnalyticsInternals::init"
+    ]
   },
   "depends": {
     "fabricloader": "*",

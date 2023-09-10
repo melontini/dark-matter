@@ -11,15 +11,16 @@ import java.util.concurrent.Future;
 public class MixpanelHandler extends MessageHandler<MixpanelAnalytics.MessageProvider> {
     private final Mixpanel mixpanel;
 
-    public MixpanelHandler(Mixpanel api) {
+    public MixpanelHandler(Analytics analytics, Mixpanel api) {
+        super(analytics);
         this.mixpanel = api;
     }
 
     protected void sendInternal(MixpanelAnalytics.MessageProvider consumer, boolean wait, boolean errors) {
-        if (!Analytics.isEnabled() && !Analytics.handleCrashes()) return;
+        if (!analytics.enabled() && !analytics.handleCrashes()) return;
         Future<?> future = EXECUTOR.submit(() -> {
             try {
-                consumer.consume(this.mixpanel);
+                consumer.consume(this.mixpanel, this.analytics);
             } catch (Exception e) {
                 if (errors) DarkMatterLog.error("Could not send analytics message", e);
             }

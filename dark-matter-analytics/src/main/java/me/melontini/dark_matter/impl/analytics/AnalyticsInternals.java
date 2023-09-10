@@ -9,44 +9,45 @@ import org.jetbrains.annotations.ApiStatus;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
 @ApiStatus.Internal
 public class AnalyticsInternals {
-    private static final UUID nullID = new UUID(0, 0);
+
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
-    private static final Path OLD_CONFIG_PATH = FabricLoader.getInstance().getConfigDir().resolve("dark-matter/analytics.properties");
-    private static final Config CONFIG;
+    private static final ReadConfig CONFIG;
+    private static UUID oldID = null;
 
     static {
         CONFIG = loadConfig();
     }
 
     private static void upgradeToJson(Config config) {
-        if (Files.exists(OLD_CONFIG_PATH)) {
+        Path oldConfigPath = FabricLoader.getInstance().getConfigDir().resolve("dark-matter/analytics.properties");
+        if (Files.exists(oldConfigPath)) {
             Properties properties = new Properties();
             try {
-                properties.load(Files.newInputStream(OLD_CONFIG_PATH));
+                properties.load(Files.newInputStream(oldConfigPath));
                 config.enabled = Boolean.parseBoolean(properties.getProperty("enabled"));
                 config.userUUID = UUID.fromString(properties.getProperty("user_id"));
 
-                Files.deleteIfExists(OLD_CONFIG_PATH);
+                Files.deleteIfExists(oldConfigPath);
             } catch (IOException e) {
                 DarkMatterLog.error("Could not read analytics properties", e);
             }
         }
     }
 
-    private static Config loadConfig() {
+    private static ReadConfig loadConfig() {
         Config config = new Config();
         upgradeToJson(config);
         Path configPath = FabricLoader.getInstance().getConfigDir().resolve("dark-matter/analytics.json");
         if (Files.exists(configPath)) {
-            try {
-                config = GSON.fromJson(Files.newBufferedReader(configPath), Config.class);
-                if (config.enabled && nullID.equals(config.userUUID)) config.userUUID = UUID.randomUUID();
-                if (!config.enabled) config.userUUID = nullID;
+            try(var reader = Files.newBufferedReader(configPath)) {
+                config = GSON.fromJson(reader, Config.class);
+                oldID = config.userUUID;
                 Files.write(configPath, GSON.toJson(config).getBytes());
             } catch (IOException e) {
                 throw new RuntimeException(e);
@@ -54,34 +55,38 @@ public class AnalyticsInternals {
         } else {
             try {
                 Files.createDirectories(configPath.getParent());
-                if (config.enabled) config.userUUID = UUID.randomUUID();
                 Files.write(configPath, GSON.toJson(config).getBytes());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
         }
-        return config;
-    }
-
-    public static UUID getUUID() {
-        return CONFIG.userUUID;
-    }
-
-    public static String getUUIDString() {
-        return CONFIG.userUUID.toString();
+        return new ReadConfig(config.enabled,  config.crashesEnabled);
     }
 
     public static boolean isEnabled() {
-        return CONFIG.enabled;
+        return CONFIG.enabled();
     }
 
     public static boolean handleCrashes() {
-        return CONFIG.crashesEnabled;
+        return CONFIG.crashesEnabled();
+    }
+
+    public static Optional<UUID> getOldID() {
+        return Optional.ofNullable(oldID);
+    }
+
+    public static void init() {
+        // Init the config on PreLaunch.
+    }
+
+    private record ReadConfig(boolean enabled, boolean crashesEnabled) {
+
     }
 
     private static class Config {
         public boolean enabled = true;
         public boolean crashesEnabled = true;
-        public UUID userUUID = nullID;
+        @Deprecated
+        public UUID userUUID;
     }
 }

@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.analytics.mixpanel;
 
 import com.google.gson.JsonObject;
+import me.melontini.dark_matter.api.analytics.Analytics;
 import me.melontini.dark_matter.api.analytics.Prop;
 import me.melontini.dark_matter.api.analytics.mixpanel.interfaces.Mixpanel;
 import me.melontini.dark_matter.impl.analytics.mixpanel.MixpanelAnalyticsInternals;
@@ -23,8 +24,8 @@ public class MixpanelAnalytics {
      * @param eu    A boolean value indicating whether to send analytics data to the Mixpanel EU server or not.
      * @return A MixpanelHandler instance for the provided token.
      */
-    public static MixpanelHandler init(String token, boolean eu) {
-        return MixpanelAnalyticsInternals.init(token, eu);
+    public static MixpanelHandler init(Analytics analytics, String token, boolean eu) {
+        return MixpanelAnalyticsInternals.init(analytics, token, eu);
     }
 
     /**
@@ -52,6 +53,6 @@ public class MixpanelAnalytics {
     }
 
     public interface MessageProvider {
-        void consume(Mixpanel mixpanel);
+        void consume(Mixpanel mixpanel, Analytics analytics);
     }
 }

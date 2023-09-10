@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.content;
 
 import com.mojang.datafixers.types.Type;
+import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.content.interfaces.AnimatedItemGroup;
 import me.melontini.dark_matter.api.content.interfaces.DarkMatterEntries;
 import me.melontini.dark_matter.impl.content.builders.BlockBuilderImpl;
@@ -18,6 +19,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Optional;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 
@@ -31,40 +33,49 @@ public class ContentBuilder {
         throw new UnsupportedOperationException();
     }
 
-    public interface ItemBuilder<T extends Item> {
+    public interface CommonBuilder<T> {
+
+        CommonBuilder<T> register(BooleanSupplier booleanSupplier);
+
+        default CommonBuilder<T> register(boolean bool) {
+            return register(bool ? Utilities.getTruth() : Utilities.getFalse());
+        }
+
+        Identifier getId();
+
+        @Nullable T build();
+
+        default Optional<T> buildOrEmpty() {
+            try {
+                return Optional.ofNullable(build());
+            } catch (Throwable t) {
+                return Optional.empty();
+            }
+        }
+
+        default Optional<T> optional() {
+            return Optional.ofNullable(build());
+        }
+    }
+
+    public interface ItemBuilder<T extends Item> extends CommonBuilder<T> {
 
         static <T extends Item> ItemBuilder<T> create(Identifier identifier, Supplier<T> itemSupplier) {
             return new ItemBuilderImpl<>(identifier, itemSupplier);
         }
 
-        ItemBuilder<T> registerCondition(BooleanSupplier booleanSupplier);
-
-        default ItemBuilder<T> registerCondition(boolean bool) {
-            return registerCondition(() -> bool);
-        }
-
         ContentBuilder.ItemBuilder<T> itemGroup(ItemGroup group);
-
-        @Nullable T build();
     }
 
-    public interface BlockBuilder<T extends Block> {
+    public interface BlockBuilder<T extends Block> extends CommonBuilder<T> {
 
         static <T extends Block> BlockBuilder<T> create(Identifier identifier, Supplier<T> blockSupplier) {
             return new BlockBuilderImpl<>(identifier, blockSupplier);
         }
 
-        BlockBuilder<T> registerCondition(BooleanSupplier booleanSupplier);
-
-        default BlockBuilder<T> registerCondition(boolean bool) {
-            return registerCondition(() -> bool);
-        }
-
         <I extends Item> ContentBuilder.BlockBuilder<T> item(ContentBuilder.BlockBuilder.ItemFactory<I> factory);
 
         <B extends BlockEntity> ContentBuilder.BlockBuilder<T> blockEntity(ContentBuilder.BlockBuilder.BlockEntityFactory<B> factory);
-
-        T build();
 
         @FunctionalInterface
         interface ItemFactory<I extends Item> {
@@ -77,26 +88,16 @@ public class ContentBuilder {
         }
     }
 
-    public interface BlockEntityBuilder<T extends BlockEntity> {
+    public interface BlockEntityBuilder<T extends BlockEntity> extends CommonBuilder<BlockEntityType<T>> {
 
         static <T extends BlockEntity> BlockEntityBuilder<T> create(Identifier id, BlockEntityType.BlockEntityFactory<? extends T> factory, Block... blocks) {
             return new BlockEntityBuilderImpl<>(id, factory, blocks);
         }
 
-        BlockEntityBuilder<T> registerCondition(BooleanSupplier booleanSupplier);
-
-        default BlockEntityBuilder<T> registerCondition(boolean bool) {
-            return registerCondition(() -> bool);
-        }
-
-        default BlockEntityType<T> build() {
-            return build(null);
-        }
-
-        BlockEntityType<T> build(Type<?> type);
+        BlockEntityBuilder<T> type(Type<?> type);
     }
 
-    public interface ItemGroupBuilder {
+    public interface ItemGroupBuilder extends CommonBuilder<ItemGroup> {
 
         static ItemGroupBuilder create(Identifier id) {
             return new ItemGroupBuilderImpl(id);
@@ -119,7 +120,5 @@ public class ContentBuilder {
         ItemGroupBuilder entries(DarkMatterEntries.Collector collector);
 
         ItemGroupBuilder displayName(Text displayName);
-
-        ItemGroup build();
     }
 }

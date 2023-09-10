@@ -1,6 +1,12 @@
 ## What's new:
 
-### Breaking changes for content and notable for others.
+### Breaking changes for content, analytics and notable for others.
+
+### Analytics
+
+* Unique IDs are now generated for each mod separately and are no longer stored in the config.
+  * You need a ModContainer to generate an instance.
+* Removed Decider from Crashlytics.
 
 ### Base
 
@@ -24,6 +30,7 @@
   * This includes `mapAnnotationNode()` and `mapObjectFromAnnotation()` from `ExtendedPlugin`.
 * Added `of()` methods to `Tuple` and `MutableTuple`.
 * Fixed `@MixinShouldApply` skipping every second mod.
+* Updated MixinExtras.
 
 ### Content
 

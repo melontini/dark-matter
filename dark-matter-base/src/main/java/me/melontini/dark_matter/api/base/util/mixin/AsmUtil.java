@@ -14,6 +14,10 @@ public class AsmUtil {
         return AsmImpl.mapAnnotationNode(node);
     }
 
+    public static <T> T getAnnotationValue(AnnotationNode node, String name, T defaultValue) {
+        return AsmImpl.getAnnotationValue(node, name, defaultValue);
+    }
+
     public static Object mapObjectFromAnnotation(Object value) {
         return AsmImpl.mapObjectFromAnnotation(value, true, false);
     }

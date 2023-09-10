@@ -23,14 +23,11 @@ import java.util.UUID;
 public class MixpanelAPI implements Mixpanel {
     private static final String BASE_URL = "https://api.mixpanel.com";
     private static final String EU_URL = "https://api-eu.mixpanel.com";
-
-    private final String endpoint;
-    private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofMillis(2000)).proxy(ProxySelector.getDefault()).build();
-    private final String token;
+    private static final HttpClient CLIENT = HttpClient.newBuilder().followRedirects(HttpClient.Redirect.NORMAL).connectTimeout(Duration.ofMillis(2000)).proxy(ProxySelector.getDefault()).build();
+    private final Holder holder;
 
     public MixpanelAPI(boolean eu, String projectToken) {
-        this.endpoint = eu ? EU_URL : BASE_URL;
-        this.token = projectToken;
+        this.holder = new Holder(projectToken, eu ? EU_URL : BASE_URL);
     }
 
     public void trackEvent(String userID, String eventName, JsonObject props) {
@@ -41,7 +38,7 @@ public class MixpanelAPI implements Mixpanel {
             props = new JsonObject();
         }
 
-        if (!props.has("token")) props.addProperty("token", this.token);
+        if (!props.has("token")) props.addProperty("token", this.holder.token());
         if (!props.has("time")) props.addProperty("time", System.currentTimeMillis());
         if (!props.has("$insert_id")) props.addProperty("$insert_id", UUID.randomUUID().toString());
         if (userID != null && !props.has("distinct_id")) props.addProperty("distinct_id", userID);
@@ -103,7 +100,7 @@ public class MixpanelAPI implements Mixpanel {
 
     public JsonObject profileDefaults(String userID) {
         JsonObject object = new JsonObject();
-        if (!object.has("$token")) object.addProperty("$token", this.token);
+        if (!object.has("$token")) object.addProperty("$token", this.holder.token());
         if (!object.has("$time")) object.addProperty("$time", System.currentTimeMillis());
         if (userID != null && !object.has("$distinct_id")) object.addProperty("$distinct_id", userID);
         return object;
@@ -116,15 +113,19 @@ public class MixpanelAPI implements Mixpanel {
         }
         try {
             HttpRequest request = HttpRequest.newBuilder()
-                    .uri(URI.create(this.endpoint + endpoint))
+                    .uri(URI.create(this.holder.endpoint() + endpoint))
                     .header("accept", "text/plain")
                     .header("content-type", "application/json")
                     .method("POST", HttpRequest.BodyPublishers.ofString(array.toString()))
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            HttpResponse<String> response = CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
             if (response.statusCode() != 200) throw new RuntimeException("Status Code: " + response.statusCode() + " Body: " + response.body());
         } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private record Holder(String token, String endpoint) {
+
     }
 }

@@ -18,6 +18,9 @@ public final class Utilities {
 
     public static final Random RANDOM = new Random();
 
+    private static final BooleanSupplier TRUTH = () -> true;
+    private static final BooleanSupplier FALSE = () -> false;
+
     public static <T> T pickAtRandom(@NotNull T[] list) {
         MakeSure.notEmpty(list);
         return list[RANDOM.nextInt(list.length)];
@@ -26,6 +29,18 @@ public final class Utilities {
     public static <T> T pickAtRandom(@NotNull List<T> list) {
         MakeSure.notEmpty(list);
         return list.get(RANDOM.nextInt(list.size()));
+    }
+
+    public static BooleanSupplier getTruth() {
+        return TRUTH;
+    }
+
+    public static BooleanSupplier getFalse() {
+        return FALSE;
+    }
+
+    public static <F,U> U cast(F o) {
+        return (U) o;
     }
 
     public static void run(Runnable runnable) {

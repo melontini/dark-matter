@@ -6,6 +6,7 @@ import org.objectweb.asm.tree.ClassNode;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.Instrumentation;
 import java.security.ProtectionDomain;
+import java.util.Optional;
 
 public class InstrumentationAccess {
 
@@ -35,6 +36,14 @@ public class InstrumentationAccess {
 
     public static Instrumentation getInstrumentation() {
         return InstrumentationInternals.getInstrumentation();
+    }
+
+    public static Instrumentation get() {
+        return InstrumentationInternals.getInstrumentation();
+    }
+
+    public static Optional<Instrumentation> getOrEmpty() {
+        return Optional.ofNullable(InstrumentationInternals.getInstrumentation());
     }
 
     @FunctionalInterface

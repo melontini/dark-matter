@@ -185,7 +185,7 @@ public final class RecipeBookHelper {
     public static void registerAndAddToSearch(@NotNull RecipeBookCategory category, @NotNull RecipeBookGroup searchGroup, int index, @NotNull List<RecipeBookGroup> groups) {
         RecipeBookInternals.registerGroups(category, index, groups);
         groups.remove(searchGroup);
-        RecipeBookInternals.addToSearchGroup(searchGroup, index - 1, groups);
+        RecipeBookInternals.addToSearchGroup(searchGroup, Math.max(index - 1, 0), groups);
     }
 
     //

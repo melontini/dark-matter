@@ -41,9 +41,9 @@ public class InstrumentationInternals {
         throw new UnsupportedOperationException();
     }
 
-    public static final String EXPORT_DIR = ".dark-matter/class";
-    public static final String GAME_DIR = FabricLoader.getInstance().getGameDir().toString();
-    public static final String AGENT_DIR = ".dark-matter/agent";
+    public static final Path GAME_DIR = FabricLoader.getInstance().getGameDir();
+    public static final Path EXPORT_DIR = GAME_DIR.resolve(".dark-matter/class");
+    public static final Path AGENT_DIR = GAME_DIR.resolve(".dark-matter/agent");
     private static Instrumentation instrumentation;
     private static boolean canInstrument = false;
 
@@ -80,7 +80,7 @@ public class InstrumentationInternals {
                     byte[] clsFile = writer.toByteArray();
                     if (export) {
                         try {
-                            Path path = Path.of(GAME_DIR, EXPORT_DIR, className.replace(".", "/") + ".class");
+                            Path path = EXPORT_DIR.resolve(className.replace(".", "/") + ".class");
                             Files.createDirectories(path.getParent());
                             Files.write(path, clsFile);
                         } catch (IOException e) {
@@ -111,9 +111,8 @@ public class InstrumentationInternals {
 
     static {
         try {
-            Path path = Path.of(GAME_DIR, EXPORT_DIR);
-            if (Files.exists(path)) {
-                Files.walkFileTree(path, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
+            if (Files.exists(EXPORT_DIR)) {
+                Files.walkFileTree(EXPORT_DIR, EnumSet.noneOf(FileVisitOption.class), Integer.MAX_VALUE, new SimpleFileVisitor<>() {
                     @Override
                     public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
                         Files.delete(file);
@@ -122,7 +121,7 @@ public class InstrumentationInternals {
 
                     @Override
                     public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-                        if (!dir.equals(path)) {
+                        if (!dir.equals(EXPORT_DIR)) {
                             Files.delete(dir);
                         }
                         return FileVisitResult.CONTINUE;
@@ -156,7 +155,7 @@ public class InstrumentationInternals {
 
     private static Instrumentation tryAttachDarkAgent() throws Exception {
         final String name = ManagementFactory.getRuntimeMXBean().getName();
-        final Path jarPath = Paths.get(GAME_DIR, AGENT_DIR, "dark_matter_instrumentation_agent.jar");
+        final Path jarPath = AGENT_DIR.resolve("dark_matter_instrumentation_agent.jar");
         final File jar = jarPath.toFile();
 
         DarkMatterLog.info("Attaching instrumentation agent to VM.");

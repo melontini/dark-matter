@@ -6,9 +6,23 @@ import org.objectweb.asm.tree.AnnotationNode;
 
 import java.util.*;
 
+import static me.melontini.dark_matter.api.base.util.Utilities.cast;
+
 public class AsmImpl {
 
     private static final List<Map<String, Object>> EMPTY_ANN_LIST = Collections.unmodifiableList(new ArrayList<>());
+
+    public static <T> T getAnnotationValue(AnnotationNode node, String name, T defaultValue) {
+        if (node == null || node.values == null) return defaultValue;
+
+        for (int i = 0; i < node.values.size(); i += 2) {
+            if (name.equals(node.values.get(i))) {
+                return cast(mapObjectFromAnnotation(node.values.get(i + 1)));
+            }
+        }
+
+        return defaultValue;
+    }
 
     public static Map<String, Object> mapAnnotationNode(AnnotationNode node) {
         Map<String, Object> values = new HashMap<>();
@@ -47,7 +61,7 @@ public class AsmImpl {
             try {
                 Class<?> cls = Class.forName(enum0[0].replace("/", ".").substring(1, enum0[0].length() - 1));
                 if (Enum.class.isAssignableFrom(cls)) {
-                    value = Enum.valueOf((Class<? extends Enum>) cls, enum0[1]);
+                    value = Enum.valueOf(cast(cls), enum0[1]);
                     return value;
                 }
             } catch (ClassNotFoundException e) {

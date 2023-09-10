@@ -19,6 +19,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import static me.melontini.dark_matter.api.base.util.Utilities.cast;
+
 @ApiStatus.Internal
 public class MixinPredicatePlugin implements IPluginPlugin {
 
@@ -26,9 +28,13 @@ public class MixinPredicatePlugin implements IPluginPlugin {
 
     @Override
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName, ClassNode mixinNode, List<AnnotationNode> mergedAnnotations) {
-        AnnotationNode annotationNode = Annotations.getVisible(mixinNode, MixinPredicate.class);
-        if (annotationNode == null) return true;
-        return process(annotationNode);
+        AnnotationNode node = Annotations.getVisible(mixinNode, MixinPredicate.class);
+        if (node == null) return true;
+
+        Map<String, Object> values = AsmUtil.mapAnnotationNode(node);
+        if (values.isEmpty()) return true;
+
+        return checkMods(values);
     }
 
     @Override
@@ -38,21 +44,15 @@ public class MixinPredicatePlugin implements IPluginPlugin {
         }
     }
 
-    private static boolean process(AnnotationNode node) {
-        Map<String, Object> values = AsmUtil.mapAnnotationNode(node);
-        if (values.isEmpty()) return true;
-        return checkMods(values);
-    }
-
     private static boolean checkMods(@NotNull Map<String, Object> values) {
-        List<Map<String, Object>> array = (List<Map<String, Object>>) values.getOrDefault("mods", AsmUtil.emptyAnnotationList());
+        List<Map<String, Object>> array = cast(values.getOrDefault("mods", AsmUtil.emptyAnnotationList()));
         if (array.isEmpty()) return true;
 
         for (Map<String, Object> map : array) {
             try {
-                String id = (String) map.get("value");
-                Mod.State state = (Mod.State) map.getOrDefault("state", Mod.State.LOADED);
-                String version = (String) map.getOrDefault("version", "*");
+                String id = cast(map.get("value"));
+                Mod.State state = cast(map.getOrDefault("state", Mod.State.LOADED));
+                String version = cast(map.getOrDefault("version", "*"));
                 VersionPredicate predicate = VersionPredicate.parse(version);
 
                 Optional<ModContainer> container = FabricLoader.getInstance().getModContainer(id);

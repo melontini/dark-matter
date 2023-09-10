@@ -56,7 +56,7 @@ public class ExtendablePlugin implements IMixinConfigPlugin {
 
             if (apply.get()) apply.set(this.shouldApplyMixin(targetClassName, mixinClassName, node, annotationNodes));
         } catch (Exception e) {
-            throw new RuntimeException();
+            throw new RuntimeException(e);
         }
         return apply.get();
     }

@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.content.builders;
 
 import me.melontini.dark_matter.api.base.util.MakeSure;
+import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.content.ContentBuilder;
 import me.melontini.dark_matter.api.content.RegistryUtil;
 import net.minecraft.block.Block;
@@ -15,7 +16,7 @@ public class BlockBuilderImpl<T extends Block> implements ContentBuilder.BlockBu
 
     private final Identifier identifier;
     private final Supplier<T> blockSupplier;
-    private BooleanSupplier register = () -> true;
+    private BooleanSupplier register = Utilities.getTruth();
     private ContentBuilder.BlockBuilder.ItemFactory<?> itemFactory;
     private ContentBuilder.BlockBuilder.BlockEntityFactory<?> blockEntityFactory;
 
@@ -27,24 +28,33 @@ public class BlockBuilderImpl<T extends Block> implements ContentBuilder.BlockBu
         this.blockSupplier = blockSupplier;
     }
 
-    public ContentBuilder.BlockBuilder<T> registerCondition(BooleanSupplier booleanSupplier) {
+    @Override
+    public ContentBuilder.BlockBuilder<T> register(BooleanSupplier booleanSupplier) {
         MakeSure.notNull(booleanSupplier, "couldn't build: " + identifier);
         this.register = booleanSupplier;
         return this;
     }
 
+    @Override
+    public Identifier getId() {
+        return this.identifier;
+    }
+
+    @Override
     public <I extends Item> ContentBuilder.BlockBuilder<T> item(ContentBuilder.BlockBuilder.ItemFactory<I> factory) {
         MakeSure.notNull(factory, "couldn't build: " + identifier);
         this.itemFactory = factory;
         return this;
     }
 
+    @Override
     public <B extends BlockEntity> ContentBuilder.BlockBuilder<T> blockEntity(ContentBuilder.BlockBuilder.BlockEntityFactory<B> factory) {
         MakeSure.notNull(factory, "couldn't build: " + identifier);
         this.blockEntityFactory = factory;
         return this;
     }
 
+    @Override
     public T build() {
         T block = RegistryUtil.createBlock(this.register, this.identifier, this.blockSupplier);
 

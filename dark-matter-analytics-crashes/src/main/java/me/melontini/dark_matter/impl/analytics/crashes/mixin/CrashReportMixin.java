@@ -21,21 +21,22 @@ import java.nio.file.Files;
 @Mixin(CrashReport.class)
 public abstract class CrashReportMixin {
 
-    @Shadow @Final private Throwable cause;
+    @Shadow
+    @Final
+    private Throwable cause;
 
     @Inject(at = @At("RETURN"), method = "writeToFile")
     private void dark_matter$handleCrash(File file, CallbackInfoReturnable<Boolean> cir) {
-        if (Analytics.handleCrashes()) {
-            EnvType envType = FabricLoader.getInstance().getEnvironmentType();
-            String latestLog = null;
-            try {
-                latestLog = Files.readString(FabricLoader.getInstance().getGameDir().resolve("logs/latest.log"));
-            } catch (IOException ignored) {}
+        EnvType envType = FabricLoader.getInstance().getEnvironmentType();
+        String latestLog = null;
+        try {
+            latestLog = Files.readString(FabricLoader.getInstance().getGameDir().resolve("logs/latest.log"));
+        } catch (IOException ignored) {
+        }
 
-            for (Tuple<Crashlytics.Decider, Crashlytics.Handler> tuple : CrashlyticsInternals.getView().values()) {
-                if (tuple.left().shouldHandle((CrashReport) (Object) this, this.cause, latestLog, envType)) {
-                    tuple.right().handle((CrashReport) (Object) this, this.cause, latestLog, envType);
-                }
+        for (Tuple<Analytics, Crashlytics.Handler> tuple : CrashlyticsInternals.getView().values()) {
+            if (tuple.left().handleCrashes()) {
+                tuple.right().handle((CrashReport) (Object) this, this.cause, latestLog, envType);
             }
         }
     }

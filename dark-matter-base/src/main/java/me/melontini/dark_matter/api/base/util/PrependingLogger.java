@@ -84,6 +84,10 @@ public class PrependingLogger {
         backing.fatal(prefixGetter.apply(backing) + msg, t);
     }
 
+    public void fatal(Throwable msg) {
+        backing.fatal(prefixGetter.apply(backing), msg);
+    }
+
     public void fatal(Object msg) {
         backing.fatal(prefixGetter.apply(backing) + "{}", msg);
     }
@@ -98,6 +102,10 @@ public class PrependingLogger {
 
     public void error(String msg, Throwable t) {
         backing.error(prefixGetter.apply(backing) + msg, t);
+    }
+
+    public void error(Throwable msg) {
+        backing.error(prefixGetter.apply(backing), msg);
     }
 
     public void error(Object msg) {
@@ -116,6 +124,10 @@ public class PrependingLogger {
         backing.warn(prefixGetter.apply(backing) + msg, t);
     }
 
+    public void warn(Throwable msg) {
+        backing.warn(prefixGetter.apply(backing), msg);
+    }
+
     public void warn(Object msg) {
         backing.warn(prefixGetter.apply(backing) + "{}", msg);
     }
@@ -130,6 +142,10 @@ public class PrependingLogger {
 
     public void info(String msg, Throwable t) {
         backing.info(prefixGetter.apply(backing) + msg, t);
+    }
+
+    public void info(Throwable msg) {
+        backing.info(prefixGetter.apply(backing), msg);
     }
 
     public void info(Object msg) {
@@ -148,6 +164,10 @@ public class PrependingLogger {
         backing.debug(prefixGetter.apply(backing) + msg, t);
     }
 
+    public void debug(Throwable msg) {
+        backing.debug(prefixGetter.apply(backing), msg);
+    }
+
     public void debug(Object msg) {
         backing.debug(prefixGetter.apply(backing) + "{}", msg);
     }
@@ -162,6 +182,10 @@ public class PrependingLogger {
 
     public void trace(String msg, Throwable t) {
         backing.trace(prefixGetter.apply(backing) + msg, t);
+    }
+
+    public void trace(Throwable msg) {
+        backing.trace(prefixGetter.apply(backing), msg);
     }
 
     public void trace(Object msg) {

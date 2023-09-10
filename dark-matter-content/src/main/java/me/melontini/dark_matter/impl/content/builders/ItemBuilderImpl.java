@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.content.builders;
 
 import me.melontini.dark_matter.api.base.util.MakeSure;
+import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.content.ContentBuilder;
 import me.melontini.dark_matter.api.content.ItemGroupHelper;
 import me.melontini.dark_matter.api.content.RegistryUtil;
@@ -17,7 +18,7 @@ public class ItemBuilderImpl<T extends Item> implements ContentBuilder.ItemBuild
 
     private final Identifier identifier;
     private final Supplier<T> itemSupplier;
-    private BooleanSupplier register = () -> true;
+    private BooleanSupplier register = Utilities.getTruth();
     private ItemGroup itemGroup;
 
     public ItemBuilderImpl(Identifier id, Supplier<T> itemSupplier) {
@@ -28,17 +29,25 @@ public class ItemBuilderImpl<T extends Item> implements ContentBuilder.ItemBuild
         this.itemSupplier = itemSupplier;
     }
 
-    public ContentBuilder.ItemBuilder<T> registerCondition(BooleanSupplier booleanSupplier) {
+    @Override
+    public ContentBuilder.ItemBuilder<T> register(BooleanSupplier booleanSupplier) {
         MakeSure.notNull(booleanSupplier, "couldn't build: " + identifier);
         this.register = booleanSupplier;
         return this;
     }
 
+    @Override
     public ContentBuilder.ItemBuilder<T> itemGroup(ItemGroup group) {
         this.itemGroup = group;
         return this;
     }
 
+    @Override
+    public Identifier getId() {
+        return this.identifier;
+    }
+
+    @Override
     public T build() {
         T item = RegistryUtil.createItem(this.register, this.identifier, this.itemSupplier);
         if (item != null && this.itemGroup != null) ItemGroupHelper.addItemGroupInjection(this.itemGroup, (enabledFeatures, operatorEnabled, entriesImpl) -> entriesImpl.add(item));

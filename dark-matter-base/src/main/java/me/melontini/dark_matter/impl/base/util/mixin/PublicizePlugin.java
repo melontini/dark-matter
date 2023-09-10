@@ -38,8 +38,7 @@ public class PublicizePlugin implements IPluginPlugin {
 
     private static void publicize(MethodNode methodNode) {
         AtomicInteger integer = new AtomicInteger(methodNode.access);
-        publicize(integer);
-        if (integer.get() != methodNode.access) {
+        if (publicize(integer).get() != methodNode.access) {
             DarkMatterLog.debug("Publicized method: " + methodNode.name + methodNode.desc);
             methodNode.access = integer.get();
         }
@@ -47,14 +46,13 @@ public class PublicizePlugin implements IPluginPlugin {
 
     private static void publicize(FieldNode fieldNode) {
         AtomicInteger integer = new AtomicInteger(fieldNode.access);
-        publicize(integer);
-        if (integer.get() != fieldNode.access) {
+        if (publicize(integer).get() != fieldNode.access) {
             DarkMatterLog.debug("Publicized field: " + fieldNode.name + fieldNode.desc);
             fieldNode.access = integer.get();
         }
     }
 
-    private static void publicize(AtomicInteger access) {
+    private static AtomicInteger publicize(AtomicInteger access) {
         if (Modifier.isPrivate(access.get())) {
             access.set((access.get() & ~Opcodes.ACC_PRIVATE) | Opcodes.ACC_PUBLIC);
         }
@@ -62,6 +60,8 @@ public class PublicizePlugin implements IPluginPlugin {
         if (Modifier.isProtected(access.get())) {
             access.set((access.get() & ~Opcodes.ACC_PROTECTED) | Opcodes.ACC_PUBLIC);
         }
+
+        return access;
     }
 
 }

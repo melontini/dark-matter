@@ -8,7 +8,6 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.api.metadata.version.VersionPredicate;
 import org.jetbrains.annotations.ApiStatus;
-import org.jetbrains.annotations.NotNull;
 import org.objectweb.asm.tree.AnnotationNode;
 import org.objectweb.asm.tree.ClassNode;
 import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
@@ -16,6 +15,8 @@ import org.spongepowered.asm.util.Annotations;
 
 import java.util.List;
 import java.util.Map;
+
+import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
 @ApiStatus.Internal
 public final class ShouldApplyPlugin implements IPluginPlugin {
@@ -26,7 +27,11 @@ public final class ShouldApplyPlugin implements IPluginPlugin {
     public boolean shouldApplyMixin(String targetClassName, String mixinClassName, ClassNode mixinNode, List<AnnotationNode> mergedAnnotations) {
         AnnotationNode node = Annotations.getVisible(mixinNode, MixinShouldApply.class);
         if (node == null) return true;
-        return process(node);
+
+        Map<String, Object> values = AsmUtil.mapAnnotationNode(node);
+        if (values.isEmpty()) return true;
+
+        return checkMods(node) && checkMCVersion(node);
     }
 
     @Override
@@ -36,19 +41,13 @@ public final class ShouldApplyPlugin implements IPluginPlugin {
         }
     }
 
-    private static boolean process(AnnotationNode node) {
-        Map<String, Object> values = AsmUtil.mapAnnotationNode(node);
-        if (values.isEmpty()) return true;
-        return checkMods(values) && checkMCVersion(values);
-    }
-
-    private static boolean checkMods(@NotNull Map<String, Object> values) {
-        List<Map<String, Object>> array = (List<Map<String, Object>>) values.getOrDefault("mods", AsmUtil.emptyAnnotationList());
+    private static boolean checkMods(AnnotationNode node) {
+        List<Map<String, Object>> array = AsmUtil.getAnnotationValue(node, "mods", AsmUtil.emptyAnnotationList());
         if (array.isEmpty()) return true;
 
         for (Map<String, Object> map : array) {
-            String name = (String) map.get("value");
-            Mod.Mode mode = (Mod.Mode) map.getOrDefault("mode", Mod.Mode.LOADED);
+            String name = cast(map.get("value"));
+            Mod.Mode mode = cast(map.getOrDefault("mode", Mod.Mode.LOADED));
 
             return switch (mode) {
                 case LOADED -> FabricLoader.getInstance().isModLoaded(name);
@@ -59,8 +58,8 @@ public final class ShouldApplyPlugin implements IPluginPlugin {
         return true;
     }
 
-    private static boolean checkMCVersion(@NotNull Map<String, Object> values) {
-        String version = (String) values.getOrDefault("mcVersion", "");
+    private static boolean checkMCVersion(AnnotationNode node) {
+        String version = AsmUtil.getAnnotationValue(node, "mcVersion", "");
 
         if (version.isEmpty()) return true;
 

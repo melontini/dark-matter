@@ -5,7 +5,9 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.*;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 
@@ -48,6 +50,10 @@ public class ReflectionUtil {
         return ReflectionInternals.findMethod(clazz, name, args);
     }
 
+    public static @Nullable <T> Field findField(@NotNull Class<T> clazz, String name) {
+        return ReflectionInternals.findField(clazz, name);
+    }
+
     /**
      * Attempts to set a constructor as accessible.
      *
@@ -58,7 +64,7 @@ public class ReflectionUtil {
      * @param constructor the constructor to set as accessible
      */
     public static <T> Constructor<T> setAccessible(Constructor<T> constructor) {
-        return ReflectionInternals.setAccessible(constructor);
+        return ReflectionInternals.setAccessible(constructor, true);
     }
 
     /**
@@ -71,7 +77,7 @@ public class ReflectionUtil {
      * @param method the method to set as accessible
      */
     public static Method setAccessible(Method method) {
-        return ReflectionInternals.setAccessible(method);
+        return ReflectionInternals.setAccessible(method, true);
     }
 
     /**
@@ -84,7 +90,7 @@ public class ReflectionUtil {
      * @param field the field to set as accessible
      */
     public static Field setAccessible(Field field) {
-        return ReflectionInternals.setAccessible(field);
+        return ReflectionInternals.setAccessible(field, true);
     }
 
     public static Field tryRemoveFinal(Field field) {

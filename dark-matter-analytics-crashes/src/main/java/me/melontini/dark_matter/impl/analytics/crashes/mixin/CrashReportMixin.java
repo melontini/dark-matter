@@ -1,8 +1,5 @@
 package me.melontini.dark_matter.impl.analytics.crashes.mixin;
 
-import me.melontini.dark_matter.api.analytics.Analytics;
-import me.melontini.dark_matter.api.analytics.crashes.Crashlytics;
-import me.melontini.dark_matter.api.base.util.classes.Tuple;
 import me.melontini.dark_matter.impl.analytics.crashes.CrashlyticsInternals;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
@@ -34,11 +31,6 @@ public abstract class CrashReportMixin {
         } catch (IOException ignored) {
         }
 
-        for (Tuple<Analytics, Crashlytics.Handler> tuple : CrashlyticsInternals.getView().values()) {
-            if (tuple.left().handleCrashes()) {
-                tuple.right().handle((CrashReport) (Object) this, this.cause, latestLog, envType);
-            }
-        }
+        CrashlyticsInternals.handleCrash((CrashReport) (Object) this, this.cause, latestLog, envType);
     }
-
 }

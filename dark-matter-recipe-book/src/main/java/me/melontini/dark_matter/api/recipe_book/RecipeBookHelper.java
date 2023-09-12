@@ -208,6 +208,11 @@ public final class RecipeBookHelper {
         return RecipeBookInternals.createGroup(id.toString().replace('/', '_').replace(':', '_'), stacks);
     }
 
+    @Environment(EnvType.CLIENT)
+    public static boolean isSearchGroup(@NotNull RecipeBookGroup group) {
+        return RecipeBookGroup.SEARCH_MAP.containsKey(group);
+    }
+
     //
     // Old, deprecated code.
     //

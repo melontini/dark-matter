@@ -6,7 +6,8 @@
   "mixins": [
   ],
   "client": [
-    "debug.MinecraftClientMixin",
+    "debug.MinecraftClientRenderMixin",
+    "debug.MinecraftClientTickMixin",
     "draw.MinecraftClientMixin"
   ],
   "injectors": {

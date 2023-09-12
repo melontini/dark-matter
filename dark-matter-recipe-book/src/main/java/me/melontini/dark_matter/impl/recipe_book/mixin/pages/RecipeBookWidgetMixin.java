@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.recipe_book.mixin.pages;
 
 import me.melontini.dark_matter.api.base.util.MathStuff;
+import me.melontini.dark_matter.api.recipe_book.RecipeBookHelper;
 import me.melontini.dark_matter.api.recipe_book.interfaces.PaginatedRecipeBookWidget;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.DrawContext;
@@ -9,7 +10,6 @@ import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.screen.recipebook.RecipeGroupButtonWidget;
 import net.minecraft.client.gui.widget.ToggleButtonWidget;
 import net.minecraft.client.recipebook.ClientRecipeBook;
-import net.minecraft.client.recipebook.RecipeBookGroup;
 import net.minecraft.util.Identifier;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -59,10 +59,14 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
     @Shadow
     public abstract boolean isOpen();
 
+    @Shadow @Final public static int field_32408;
+
+    @Shadow @Final public static int field_32409;
+
     @Inject(at = @At(value = "INVOKE", target = "Lnet/minecraft/client/gui/screen/recipebook/RecipeGroupButtonWidget;setToggled(Z)V", shift = At.Shift.BEFORE), method = "reset")
     private void dark_matter$reset(CallbackInfo ci) {
-        int a = (this.parentWidth - 147) / 2 - this.leftOffset;
-        int s = (this.parentHeight + 166) / 2;
+        int a = (this.parentWidth - dm$horizontalOffset()) / 2 - this.leftOffset;
+        int s = (this.parentHeight + dm$verticalOffset()) / 2;
         this.nextPageButton = new ToggleButtonWidget(a + 14, s, 12, 17, false);
         this.nextPageButton.setTextures(DM$PAGE_FORWARD_TEXTURES);
         this.prevPageButton = new ToggleButtonWidget(a - 35, s, 12, 17, true);
@@ -79,8 +83,8 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
 
     @Unique
     private void dark_matter$renderPageText(DrawContext context) {
-        int x = (this.parentWidth - 135) / 2 - this.leftOffset - 30;
-        int y = (this.parentHeight + 169) / 2 + 3;
+        int x = (this.parentWidth - (dm$horizontalOffset() + 12)) / 2 - this.leftOffset - 30;
+        int y = (this.parentHeight + (dm$verticalOffset() + 3)) / 2 + 3;
         if (this.pages > 1) {
             String string = this.page + 1 + "/" + this.pages;
             int textLength = this.client.textRenderer.getWidth(string);
@@ -120,31 +124,31 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
     private void dark_matter$refresh(CallbackInfo ci) {
         this.pages = 0;
         int wc = 0;
-        int x = (this.parentWidth - 147) / 2 - this.leftOffset - 30;
-        int y = (this.parentHeight - 166) / 2 + 3;
+        int x = (this.parentWidth - dm$horizontalOffset()) / 2 - this.leftOffset - 30;
+        int y = (this.parentHeight - dm$verticalOffset()) / 2 + 3;
         int index = 0;
 
         for (RecipeGroupButtonWidget widget : this.tabButtons) {
-            if (RecipeBookGroup.SEARCH_MAP.containsKey(widget.getCategory())) {
+            if (RecipeBookHelper.isSearchGroup(widget.getCategory())) {
                 widget.visible = true;
 
                 widget.dm$setPage((int) Math.floor(wc / 6f));
-                widget.setPosition(x, y + 27 * index++);
+                widget.setPosition(x, y + (widget.getHeight() * index++));
                 if (index == 6) index = 0;
                 wc++;
             } else if (widget.hasKnownRecipes(this.recipeBook)) {
                 widget.checkForNewRecipes(this.client);
 
                 widget.dm$setPage((int) Math.floor(wc / 6f));
-                widget.setPosition(x, y + 27 * index++);
+                widget.setPosition(x, y + (widget.getHeight() * index++));
                 if (index == 6) index = 0;
                 wc++;
             }
         }
 
         this.pages = MathStuff.fastCeil(wc / 6f);
-        dm$updatePages();
-        dm$updatePageSwitchButtons();
+        this.dm$updatePages();
+        this.dm$updatePageSwitchButtons();
         ci.cancel();
     }
 
@@ -169,5 +173,15 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
     @Override
     public int dm$getPageCount() {
         return this.pages;
+    }
+
+    @Unique
+    private static int dm$horizontalOffset() {
+        return field_32408;
+    }
+
+    @Unique
+    private static int dm$verticalOffset() {
+        return field_32409;
     }
 }

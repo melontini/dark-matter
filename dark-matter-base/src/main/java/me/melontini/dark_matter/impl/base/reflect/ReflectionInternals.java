@@ -94,37 +94,32 @@ public class ReflectionInternals {
         return m;
     }
 
-    public static <T> Constructor<T> setAccessible(Constructor<T> constructor) {
-        MakeSure.notNull(constructor, "Tried to setAccessible a null constructor");
-        try {
-            constructor.setAccessible(true);
-        } catch (Exception e) {
-            int i = getOverrideOffset();
-            UnsafeInternals.getUnsafe().putBoolean(constructor, i, true);
+    public static <T> Field findField(Class<T> clazz, String name) {
+        Field f = null;
+
+        Field[] fields = clazz.getDeclaredFields();
+        if (fields.length == 1) {
+            f = fields[0];
+        } else {
+            for (Field field : fields) {
+                if (field.getName().equals(name)) {
+                    f = field;
+                    break;
+                }
+            }
         }
-        return constructor;
+        return f;
     }
 
-    public static Method setAccessible(Method method) {
-        MakeSure.notNull(method, "Tried to setAccessible a null method");
+    public static <T extends AccessibleObject> T setAccessible(T member, boolean set) {
+        MakeSure.notNull(member, "Tried to setAccessible a null constructor");
         try {
-            method.setAccessible(true);
+            member.setAccessible(set);
         } catch (Exception e) {
             int i = getOverrideOffset();
-            UnsafeInternals.getUnsafe().putBoolean(method, i, true);
+            UnsafeInternals.getUnsafe().putBoolean(member, i, set);
         }
-        return method;
-    }
-
-    public static Field setAccessible(Field field) {
-        MakeSure.notNull(field, "Tried to setAccessible a null field");
-        try {
-            field.setAccessible(true);
-        } catch (Exception e) {
-            int i = getOverrideOffset();
-            UnsafeInternals.getUnsafe().putBoolean(field, i, true);
-        }
-        return field;
+        return member;
     }
 
     public static Field tryRemoveFinal(Field f) {
@@ -160,7 +155,7 @@ public class ReflectionInternals {
     public static void addOpensOrExports(Module module, String pn, Module other, boolean open, boolean syncVM) {
         if (addOpensOrExports == null) {
             try {
-                addOpensOrExports = ReflectionInternals.setAccessible(ReflectionInternals.class.getModule().getClass().getDeclaredMethod("implAddExportsOrOpens", String.class, Module.class, boolean.class, boolean.class));
+                addOpensOrExports = ReflectionInternals.setAccessible(ReflectionInternals.class.getModule().getClass().getDeclaredMethod("implAddExportsOrOpens", String.class, Module.class, boolean.class, boolean.class), true);
             } catch (NoSuchMethodException e) {
                 DarkMatterLog.error("Couldn't add new {}. Expect errors", open ? "opens" : "exports");
                 return;
@@ -198,7 +193,7 @@ public class ReflectionInternals {
         try {
             if (handlesMockConstructor == null) {
                 Constructor<?> c = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
-                handlesMockConstructor = ReflectionInternals.setAccessible(c);
+                handlesMockConstructor = ReflectionInternals.setAccessible(c, true);
             }
             return ((MethodHandles.Lookup) handlesMockConstructor.newInstance(clazz));
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
@@ -213,7 +208,7 @@ public class ReflectionInternals {
         if (forName0 == null) {
             try {
                 Method m = Class.class.getDeclaredMethod("forName0", String.class, boolean.class, ClassLoader.class, Class.class);
-                forName0 = ReflectionInternals.setAccessible(m);
+                forName0 = ReflectionInternals.setAccessible(m, true);
             } catch (NoSuchMethodException e) {
                 throw new RuntimeException(e);
             }
@@ -228,7 +223,7 @@ public class ReflectionInternals {
     public static Field getField(Class<?> clazz, String name, boolean accessible) {
         try {
             var f = clazz.getDeclaredField(name);
-            return accessible ? setAccessible(f) : f;
+            return accessible ? setAccessible(f, true) : f;
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
@@ -236,7 +231,7 @@ public class ReflectionInternals {
 
     public static Object getField(Field field, Object o) {
         try {
-            return setAccessible(field).get(o);
+            return setAccessible(field, true).get(o);
         } catch (IllegalAccessException e) {
             return UnsafeInternals.getObject(field, o);
         }
@@ -244,7 +239,7 @@ public class ReflectionInternals {
 
     public static void setField(Field field, Object o, Object value) {
         try {
-            ReflectionInternals.tryRemoveFinal(setAccessible(field)).set(o, value);
+            ReflectionInternals.tryRemoveFinal(setAccessible(field, true)).set(o, value);
         } catch (IllegalAccessException e) {
             UnsafeInternals.putObject(field, o, value);
         }

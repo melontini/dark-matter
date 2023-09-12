@@ -14,6 +14,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
+import static me.melontini.dark_matter.api.base.util.Utilities.cast;
+
 @ApiStatus.Internal
 public class EnumInternals {
 
@@ -41,7 +43,7 @@ public class EnumInternals {
             ENUM_TO_FIELD.putIfAbsent(enumClass, MakeSure.notNull(enumArray, "(reflection) couldn't find enum's $VALUES"));
             enumClass.getMethod("values").invoke(enumClass);//we need to init enumClass to access its fields, duh.
 
-            T[] entries = (T[]) ReflectionUtil.getField(enumArray, enumClass);
+            T[] entries = cast(ReflectionUtil.getField(enumArray, enumClass));
             T last = entries[entries.length - 1];
 
             Object[] list = ArrayUtils.addAll(new Object[]{internalName, last.ordinal() + 1}, params);
@@ -50,12 +52,12 @@ public class EnumInternals {
             try {
                 Constructor<T> c = ReflectionUtil.findConstructor(enumClass, list);
                 MakeSure.notNull(c, "(reflection) Couldn't find enum constructor, possible parameter mismatch?");
-                entry = (T) MethodHandles.lookup().unreflectConstructor(ReflectionUtil.setAccessible(c)).invokeWithArguments(list);//thankfully, for some reason MethodHandles can invoke enum constructors.
+                entry = cast(MethodHandles.lookup().unreflectConstructor(ReflectionUtil.setAccessible(c)).invokeWithArguments(list));//thankfully, for some reason MethodHandles can invoke enum constructors.
             } catch (Exception e) {
                 throw new ReflectiveOperationException("(reflection) Couldn't create new enum instance", e);
             }
             MakeSure.notNull(entry, "(reflection) Couldn't create new enum instance");
-            T[] tempArray = ArrayUtils.add((T[]) ReflectionUtil.getField(enumArray, enumClass), entry);
+            T[] tempArray = ArrayUtils.add(cast(ReflectionUtil.getField(enumArray, enumClass)), entry);
 
             ReflectionUtil.setField(enumArray, enumClass, tempArray);//We assume that $VALUES are always private and final. Although this isn't always true.
             clearEnumCache(enumClass);

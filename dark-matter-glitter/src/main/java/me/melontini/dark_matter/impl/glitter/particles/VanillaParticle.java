@@ -1,31 +1,23 @@
 package me.melontini.dark_matter.impl.glitter.particles;
 
 import com.mojang.blaze3d.systems.RenderSystem;
-import it.unimi.dsi.fastutil.ints.Int2ObjectMap;
 import me.melontini.dark_matter.api.glitter.particles.AbstractScreenParticle;
 import me.melontini.dark_matter.api.mirage.Mirage;
+import me.melontini.dark_matter.impl.glitter.mixin.ParticleManagerAccessor;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.MappingResolver;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.particle.Particle;
-import net.minecraft.client.particle.ParticleFactory;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.Camera;
 import net.minecraft.client.render.GameRenderer;
 import net.minecraft.client.render.Tessellator;
 import net.minecraft.client.util.math.MatrixStack;
+import net.minecraft.client.world.ClientWorld;
 import net.minecraft.particle.ParticleEffect;
-import net.minecraft.util.Identifier;
-import net.minecraft.registry.Registries;
 import net.minecraft.util.crash.CrashException;
 import net.minecraft.util.crash.CrashReport;
 import net.minecraft.util.crash.CrashReportSection;
-
-import java.lang.reflect.Field;
-import java.util.Map;
-import java.util.Optional;
 
 /**
  * Render vanilla particle types on screen!
@@ -35,6 +27,7 @@ import java.util.Optional;
 @Environment(EnvType.CLIENT)
 public class VanillaParticle extends AbstractScreenParticle {
 
+    public static final ThreadLocal<ClientWorld> WORLD = ThreadLocal.withInitial(() -> null);
     private static final Camera CAMERA = new Camera();
     private final Particle particle;
 
@@ -120,41 +113,13 @@ public class VanillaParticle extends AbstractScreenParticle {
     }
 
     public static <T extends ParticleEffect> Particle createScreenParticle(T parameters, double x, double y, double velocityX, double velocityY, double velocityZ) {
-        return Optional.ofNullable(getFactory(parameters))
-                .map(factory -> factory.createParticle(parameters, Mirage.FAKE_WORLD, x / 24, (MinecraftClient.getInstance().getWindow().getScaledHeight() - y) / 24, 0, velocityX, velocityY, velocityZ))
-                .orElseThrow(() -> new NullPointerException("Particle type has no factory!"));
-    }
-
-    private static <T extends ParticleEffect> ParticleFactory<T> getFactory(T particleType) {
-        if (!typeChangedByForge) {
-            return (ParticleFactory<T>) MinecraftClient.getInstance().particleManager.factories.get(Registries.PARTICLE_TYPE.getRawId(particleType.getType()));
-        } else {
-            try {
-                return ((Map<Identifier, ParticleFactory<T>>) factoriesField.get(MinecraftClient.getInstance().particleManager)).get(Registries.PARTICLE_TYPE.getId(particleType.getType()));
-            } catch (IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+        Particle particle;
+        try {
+            WORLD.set(Mirage.FAKE_WORLD);
+            particle = ((ParticleManagerAccessor)MinecraftClient.getInstance().particleManager).dark_matter$createParticle(parameters, x / 24, (MinecraftClient.getInstance().getWindow().getScaledHeight() - y) / 24, 0, velocityX, velocityY, velocityZ);
+        } finally {
+            WORLD.remove();
         }
-    }
-
-    private static boolean typeChangedByForge = false;
-    private static Field factoriesField = null;
-
-    static {
-        MappingResolver resolver = FabricLoader.getInstance().getMappingResolver();
-        String forge = resolver.mapFieldName("intermediary", "net.minecraft.class_702", "field_3835", "Ljava/util/Map;");
-        Field field = null;
-        for (Field field1 : MinecraftClient.getInstance().particleManager.getClass().getFields()) {
-            if (field1.getName().equals(forge)) {
-                field = field1;
-                break;
-            }
-        }
-
-        if (field != null && field.getType() != Int2ObjectMap.class) {
-            typeChangedByForge = true;
-            factoriesField = field;
-            factoriesField.setAccessible(true);
-        }
+        return particle;
     }
 }

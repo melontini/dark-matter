@@ -4,6 +4,7 @@
   "package": "me.melontini.dark_matter.impl.minecraft.mixin",
   "compatibilityLevel": "JAVA_17",
   "mixins": [
+    "world.DataFixTypesMixin"
   ],
   "client": [
     "debug.MinecraftClientRenderMixin",

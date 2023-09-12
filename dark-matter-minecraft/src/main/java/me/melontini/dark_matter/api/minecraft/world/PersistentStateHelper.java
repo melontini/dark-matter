@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.minecraft.world;
 
 import me.melontini.dark_matter.api.minecraft.world.interfaces.DeserializableState;
+import me.melontini.dark_matter.impl.minecraft.world.PersistentStateInternals;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.server.world.ServerWorld;
 import net.minecraft.world.PersistentState;
@@ -16,7 +17,7 @@ import java.util.function.Supplier;
 public final class PersistentStateHelper {
 
     public static <T extends PersistentState> T getOrCreate(ServerWorld world, Function<NbtCompound, T> readFunction, Supplier<T> supplier, String id) {
-        return world.getPersistentStateManager().getOrCreate(readFunction, supplier, id);
+        return PersistentStateInternals.getOrCreate(world, readFunction, supplier, id);
     }
 
     public static <T extends PersistentState> T getOrCreate(ServerWorld world, Supplier<T> supplier, String id) {

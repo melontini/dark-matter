@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.base.util.classes;
 
 import java.util.Objects;
+import java.util.function.Function;
 
 public final class MutableTuple<L, R> {
 
@@ -30,6 +31,30 @@ public final class MutableTuple<L, R> {
 
     public void right(R right) {
         this.right = right;
+    }
+
+    public boolean isLeftPresent() {
+        return left != null;
+    }
+
+    public boolean isRightPresent() {
+        return right != null;
+    }
+
+    public MutableTuple<R, L> swap() {
+        return new MutableTuple<>(right, left);
+    }
+
+    public <V> MutableTuple<V, R> mapLeft(Function<? super L, ? extends V> mapper) {
+        return new MutableTuple<>(mapper.apply(left), right);
+    }
+
+    public <V> MutableTuple<L, V> mapRight(Function<? super R, ? extends V> mapper) {
+        return new MutableTuple<>(left, mapper.apply(right));
+    }
+
+    public <V, V1> MutableTuple<V, V1> mapBoth(Function<? super L, ? extends V> mapper, Function<? super R, ? extends V1> mapper1) {
+        return new MutableTuple<>(mapper.apply(left), mapper1.apply(right));
     }
 
     @Override

@@ -48,7 +48,7 @@ public class PrependingLogger {
 
     private static final Function<Logger, String> DEFAULT = logger -> "";
     private final Logger backing;
-    protected Function<Logger, String> prefixGetter = DEFAULT;
+    protected volatile Function<Logger, String> prefixGetter = DEFAULT;
 
     public PrependingLogger(Logger backing, Function<Logger, String> prefixGetter) {
         this.backing = backing;
@@ -70,6 +70,14 @@ public class PrependingLogger {
 
     public static PrependingLogger get(String name, Function<Logger, String> prefixGetter) {
         return new PrependingLogger(LogManager.getLogger(name), prefixGetter);
+    }
+
+    public static PrependingLogger withClass(String name) {
+        return new PrependingLogger(LogManager.getLogger(name), NAME_CLASS_MIX);
+    }
+
+    public static PrependingLogger withMethod(String name) {
+        return new PrependingLogger(LogManager.getLogger(name), NAME_METHOD_MIX);
     }
 
     private static String getNameOrEmpty(Logger logger) {

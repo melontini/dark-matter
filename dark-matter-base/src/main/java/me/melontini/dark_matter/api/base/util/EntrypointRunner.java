@@ -24,4 +24,7 @@ public class EntrypointRunner {
         }
     }
 
+    public static <T> void run(String entrypoint, Class<T> type, Consumer<? super T> invoker) {
+        runEntrypoint(entrypoint, type, invoker);
+    }
 }

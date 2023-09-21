@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "dark-matter-config",
+  "version": "${version}",
+  "name": "Dark Matter Config",
+  "description": "Load and Save user configs!",
+  "authors": [
+    "melontini"
+  ],
+  "contact": {},
+  "license": "MIT",
+  "icon": "assets/dark-matter-config/icon.png",
+  "environment": "*",
+  "entrypoints": {
+  },
+  "mixins": [
+  ],
+  "depends": {
+    "fabricloader": "*",
+    "minecraft": "*",
+    "dark-matter-base": "*"
+  },
+  "provides": [
+    "dark_matter_config"
+  ],
+  "custom": {
+    "modmenu": {
+      "parent": "dark-matter",
+      "badges": [ "library" ]
+    }
+  }
+}

@@ -3,6 +3,7 @@ plugins {
     id 'fabric-loom' version "${loom_version}" apply false
     id 'maven-publish'
     id 'io.github.juuxel.loom-vineflower' version "${vineflower_version}" apply false
+    id 'io.freefair.lombok' version '8.3' apply false
 }
 
 def targetJavaVersion = 17
@@ -21,6 +22,7 @@ allprojects {
     apply plugin: 'fabric-loom'
     apply plugin: 'io.github.juuxel.loom-vineflower'
     apply plugin: 'maven-publish'
+    apply plugin: 'io.freefair.lombok'
 
     tasks.withType(JavaCompile).configureEach {
         it.options.encoding = "UTF-8"

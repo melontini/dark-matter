@@ -16,6 +16,7 @@ import java.util.function.Supplier;
  * @param <T> your desired config class
  */
 @ApiStatus.NonExtendable
+@SuppressWarnings("unused")
 public interface ConfigBuilder<T> {
 
     static <T> ConfigBuilder<T> create(Class<T> cls, ModContainer mod, String name) {
@@ -33,7 +34,7 @@ public interface ConfigBuilder<T> {
      * Allows you to register new fix-ups,
      * which will be used to update the {@link com.google.gson.JsonObject} before parsing.
      * <p>
-     * The entrypoint for this is {@code {modid}:config-fixups-{config}}
+     * The entrypoint for this is {@code {modid}:config/{config}/fixups}
      */
     ConfigBuilder<T> fixups(Consumer<FixupsBuilder> fixups);
 
@@ -42,7 +43,7 @@ public interface ConfigBuilder<T> {
      * which will be used to redirect old options to new ones.
      * For example, if {@code enableOption} moved to {@code option.enable}
      * <p>
-     * The entrypoint for this is {@code {modid}:config-redirects-{config}}
+     * The entrypoint for this is {@code {modid}:config/{config}/redirects}
      */
     ConfigBuilder<T> redirects(Consumer<RedirectsBuilder> redirects);
 
@@ -64,7 +65,7 @@ public interface ConfigBuilder<T> {
     /**
      * Allows you to register new processors, which can be used to force set a value if some conditions are bet.
      * <p>
-     * The entrypoint for this is {@code {modid}:config-processors-{config}}
+     * The entrypoint for this is {@code {modid}:config/{config}/processors}
      */
     ConfigBuilder<T> processors(Consumer<OptionProcessorRegistry<T>> consumer);
 

@@ -1,16 +1,19 @@
 package me.melontini.dark_matter.impl.base.reflect;
 
+import me.melontini.dark_matter.api.base.reflect.Reflect;
+import me.melontini.dark_matter.api.base.reflect.UnsafeAccess;
 import me.melontini.dark_matter.api.base.util.MakeSure;
-import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import sun.misc.Unsafe;
 
 import java.lang.invoke.MethodHandles;
-import java.lang.reflect.*;
-import java.util.Arrays;
+import java.lang.invoke.VarHandle;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.util.List;
 
 /**
@@ -21,7 +24,6 @@ public class ReflectionInternals {
     private ReflectionInternals() {
         throw new UnsupportedOperationException();
     }
-    private static int offset = -1;
 
     public static @Nullable <T> Constructor<T> findConstructor(@NotNull Class<T> clazz, List<Object> args) {
         Constructor<T> c = null;
@@ -54,10 +56,6 @@ public class ReflectionInternals {
             }
         }
         return c;
-    }
-
-    public static @Nullable <T> Method findMethod(@NotNull Class<T> clazz, String name, Object... args) {
-        return findMethod(clazz, name, Arrays.stream(args).toList());
     }
 
     public static @Nullable <T> Method findMethod(@NotNull Class<T> clazz, String name, List<Object> args) {
@@ -111,119 +109,40 @@ public class ReflectionInternals {
         return f;
     }
 
+    private static VarHandle override;
+
     public static <T extends AccessibleObject> T setAccessible(T member, boolean set) {
         MakeSure.notNull(member, "Tried to setAccessible a null constructor");
         try {
             member.setAccessible(set);
         } catch (Exception e) {
-            int i = getOverrideOffset();
-            UnsafeInternals.getUnsafe().putBoolean(member, i, set);
+            try {
+                if (override == null) {
+                    MethodHandles.Lookup lookup = stealTrustedLookup();
+                    override = lookup.findVarHandle(AccessibleObject.class, "override", boolean.class);
+                }
+                override.set(member, set);
+            } catch (NoSuchFieldException | IllegalAccessException ex) {
+                throw new RuntimeException(ex);
+            }
         }
         return member;
     }
 
-    public static Field tryRemoveFinal(Field f) {
-        MakeSure.notNull(f, "Tried to remove final from a null field");
+    private static MethodHandles.Lookup trustedLookup;
 
-        if (Modifier.isFinal(f.getModifiers())) {
-            Unsafe unsafe = UnsafeInternals.getUnsafe();
-            long offset;
-
-            try {
-                offset = UnsafeInternals.getObjectFieldOffset(Field.class, "modifiers");
-            } catch (Exception e) {
-                for (offset = 0; ; offset++) {
-                    if (unsafe.getInt(f, offset) == f.getModifiers()) {
-                        break;
-                    }
-                }
-            }
-
-            int modifiers = unsafe.getInt(f, offset);
-
-            if (f.getModifiers() == modifiers) {
-                unsafe.putInt(f, offset, f.getModifiers() & -17);
-            } else {
-                throw new UnsupportedOperationException("couldn't remove final");
-            }
+    public static MethodHandles.Lookup stealTrustedLookup() throws NoSuchFieldException {
+        if (trustedLookup == null) {
+            Field f = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
+            trustedLookup = (MethodHandles.Lookup) UnsafeAccess.getReference(f, null);
         }
-        return f;
-    }
-
-    private static Method addOpensOrExports;
-
-    public static void addOpensOrExports(Module module, String pn, Module other, boolean open, boolean syncVM) {
-        if (addOpensOrExports == null) {
-            try {
-                addOpensOrExports = ReflectionInternals.setAccessible(ReflectionInternals.class.getModule().getClass().getDeclaredMethod("implAddExportsOrOpens", String.class, Module.class, boolean.class, boolean.class), true);
-            } catch (NoSuchMethodException e) {
-                DarkMatterLog.error("Couldn't add new {}. Expect errors", open ? "opens" : "exports");
-                return;
-            }
-        }
-        try {
-            addOpensOrExports.invoke(module, pn, other, open, syncVM);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    //https://stackoverflow.com/questions/55918972/unable-to-find-method-sun-misc-unsafe-defineclass
-    public static int getOverrideOffset() {
-        if (offset == -1) {
-            try {
-                Field f = Unsafe.class.getDeclaredField("theUnsafe"), f1 = Unsafe.class.getDeclaredField("theUnsafe");
-                f.setAccessible(true);
-                f1.setAccessible(false);
-                Unsafe unsafe = (Unsafe) f.get(null);
-                int i;//override boolean byte offset. should result in 12 for java 17
-                for (i = 0; unsafe.getBoolean(f, i) == unsafe.getBoolean(f1, i); i++) ;
-                offset = i;
-            } catch (Exception ignored) {
-                offset = 12; //fallback to 12 just in case
-            }
-        }
-        MakeSure.isTrue(offset != -1);
-        return offset;
-    }
-
-    private static Constructor<?> handlesMockConstructor;
-
-    public static @NotNull MethodHandles.Lookup mockLookupClass(Class<?> clazz) {
-        try {
-            if (handlesMockConstructor == null) {
-                Constructor<?> c = MethodHandles.Lookup.class.getDeclaredConstructor(Class.class);
-                handlesMockConstructor = ReflectionInternals.setAccessible(c, true);
-            }
-            return ((MethodHandles.Lookup) handlesMockConstructor.newInstance(clazz));
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException |
-                 InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    private static Method forName0;
-
-    public static Class<?> accessRestrictedClass(String name, @Nullable ClassLoader loader) {
-        if (forName0 == null) {
-            try {
-                Method m = Class.class.getDeclaredMethod("forName0", String.class, boolean.class, ClassLoader.class, Class.class);
-                forName0 = ReflectionInternals.setAccessible(m, true);
-            } catch (NoSuchMethodException e) {
-                throw new RuntimeException(e);
-            }
-        }
-        try {
-            return (Class<?>) forName0.invoke(null, name, false, loader, Class.class);
-        } catch (IllegalAccessException | InvocationTargetException e) {
-            throw new RuntimeException(e);
-        }
+        return trustedLookup;
     }
 
     public static Field getField(Class<?> clazz, String name, boolean accessible) {
         try {
-            var f = clazz.getDeclaredField(name);
-            return accessible ? setAccessible(f, true) : f;
+            return Reflect.findField(clazz, name).map(field -> accessible ? setAccessible(field, true) : field)
+                    .orElseThrow(() -> new NoSuchFieldException(name));
         } catch (NoSuchFieldException e) {
             throw new RuntimeException(e);
         }
@@ -231,17 +150,17 @@ public class ReflectionInternals {
 
     public static Object getField(Field field, Object o) {
         try {
-            return setAccessible(field, true).get(o);
-        } catch (IllegalAccessException e) {
-            return UnsafeInternals.getObject(field, o);
+            return stealTrustedLookup().unreflectGetter(field).invoke(o);
+        } catch (Throwable e) {
+            return UnsafeAccess.getReference(field, o);
         }
     }
 
     public static void setField(Field field, Object o, Object value) {
         try {
-            ReflectionInternals.tryRemoveFinal(setAccessible(field, true)).set(o, value);
-        } catch (IllegalAccessException e) {
-            UnsafeInternals.putObject(field, o, value);
+            MiscReflectionInternals.tryRemoveFinal(setAccessible(field, true)).set(o, value);
+        } catch (Throwable e) {
+            UnsafeAccess.putReference(field, o, value);
         }
     }
 }

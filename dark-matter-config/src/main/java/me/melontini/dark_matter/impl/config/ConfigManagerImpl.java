@@ -234,6 +234,6 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     }
 
     private String getShareId(String key) {
-        return this.getMod().getMetadata().getId() + ":config-" + key + "-" + this.getName();
+        return this.getMod().getMetadata().getId() + ":config/" + this.getName() + "/" + key;
     }
 }

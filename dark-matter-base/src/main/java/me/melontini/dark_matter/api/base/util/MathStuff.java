@@ -50,6 +50,10 @@ public final class MathStuff {
         return new Random();
     }
 
+    public static Random random(long seed) {
+        return new Random(seed);
+    }
+
     public static double clamp(double value, double min, double max) {
         return Math.max(min, Math.min(max, value));
     }

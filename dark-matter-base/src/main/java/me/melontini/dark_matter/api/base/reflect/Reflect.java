@@ -10,8 +10,6 @@ import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Consumer;
-import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public class Reflect {
@@ -38,54 +36,6 @@ public class Reflect {
 
     public static Optional<Field> findField(@NotNull Class<?> clazz, String name) {
         return Optional.ofNullable(ReflectionInternals.findField(clazz, name));
-    }
-
-    //
-    // process if present
-    //
-
-    public static <T, R> Optional<R> processConstructor(Function<Constructor<T>, R> func, @NotNull Class<T> cls, Object... args) {
-        return findConstructor(cls, args).map(func);
-    }
-
-    public static <T, R> Optional<R> processConstructor(Function<Constructor<T>, R> func, @NotNull Class<T> cls, List<Object> args) {
-        return findConstructor(cls, args).map(func);
-    }
-
-    public static <T, R> Optional<R> processMethod(Function<Method, R> func, @NotNull Class<?> cls, String name, Object... args) {
-        return findMethod(cls, name, args).map(func);
-    }
-
-    public static <T, R> Optional<R> processMethod(Function<Method, R> func, @NotNull Class<?> cls, String name, List<Object> args) {
-        return findMethod(cls, name, args).map(func);
-    }
-
-    public static <T, R> Optional<R> processField(Function<Field, R> func, @NotNull Class<?> cls, String name) {
-        return findField(cls, name).map(func);
-    }
-
-    //
-    // consume if present
-    //
-
-    public static <T> void consumeConstructor(Consumer<Constructor<T>> consumer, @NotNull Class<T> cls, Object... args) {
-        findConstructor(cls, args).ifPresent(consumer);
-    }
-
-    public static <T> void consumeConstructor(Consumer<Constructor<T>> consumer, @NotNull Class<T> cls, List<Object> args) {
-        findConstructor(cls, args).ifPresent(consumer);
-    }
-
-    public static void consumeMethod(Consumer<Method> consumer, @NotNull Class<?> cls, String name, Object... args) {
-        findMethod(cls, name, args).ifPresent(consumer);
-    }
-
-    public static void consumeMethod(Consumer<Method> consumer, @NotNull Class<?> cls, String name, List<Object> args) {
-        findMethod(cls, name, args).ifPresent(consumer);
-    }
-
-    public static void consumeField(Consumer<Field> consumer, @NotNull Class<?> cls, String name) {
-        findField(cls, name).ifPresent(consumer);
     }
 
     //

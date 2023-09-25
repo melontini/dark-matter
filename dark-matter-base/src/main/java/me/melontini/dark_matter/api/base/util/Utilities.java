@@ -1,13 +1,10 @@
 package me.melontini.dark_matter.api.base.util;
 
-import me.melontini.dark_matter.api.base.util.classes.ThrowingRunnable;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.NotNull;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Random;
-import java.util.concurrent.Callable;
 import java.util.function.*;
 
 public final class Utilities {
@@ -19,7 +16,7 @@ public final class Utilities {
 
     public static final StackWalker STACK_WALKER = StackWalker.getInstance(StackWalker.Option.RETAIN_CLASS_REFERENCE);
 
-    public static final Random RANDOM = new Random();
+    public static final Random RANDOM = MathStuff.random();
 
     private static final BooleanSupplier TRUTH = () -> true;
     private static final BooleanSupplier FALSE = () -> false;
@@ -34,40 +31,6 @@ public final class Utilities {
         return list.get(RANDOM.nextInt(list.size()));
     }
 
-    public static void ifLoaded(String modId, Runnable runnable) {
-        if (FabricLoader.getInstance().isModLoaded(modId)) {
-            runnable.run();
-        }
-    }
-
-    public static <T> Optional<T> ifLoaded(String modId, Supplier<T> supplier) {
-        if (FabricLoader.getInstance().isModLoaded(modId)) {
-            return Optional.ofNullable(supplier.get());
-        }
-        return Optional.empty();
-    }
-
-    public static void ifLoadedWeak(String modId, ThrowingRunnable runnable) {
-        if (FabricLoader.getInstance().isModLoaded(modId)) {
-            try {
-                runnable.run();
-            } catch (Throwable ignored) {
-                // ignored
-            }
-        }
-    }
-
-    public static <T> Optional<T> ifLoadedWeak(String modId, Callable<T> supplier) {
-        if (FabricLoader.getInstance().isModLoaded(modId)) {
-            try {
-                return Optional.ofNullable(supplier.call());
-            } catch (Throwable e) {
-                return Optional.empty();
-            }
-        }
-        return Optional.empty();
-    }
-
     public static BooleanSupplier getTruth() {
         return TRUTH;
     }
@@ -76,7 +39,7 @@ public final class Utilities {
         return FALSE;
     }
 
-    public static <F,U> U cast(F o) {
+    public static <F, U> U cast(F o) {
         return (U) o;
     }
 

@@ -6,9 +6,12 @@ import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
 
-import java.lang.reflect.*;
-
-import static me.melontini.dark_matter.api.base.reflect.ReflectionUtil.setAccessible;
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 
 @ApiStatus.Internal
 public class UnsafeInternals {
@@ -32,10 +35,9 @@ public class UnsafeInternals {
             }
         }
     });
-    private static Object internalUnsafe;
-    private static Method objectFieldOffset;
 
-    public static void putObject(Field field, Object o, Object value) {
+    public static void setReference(Field field, Object o, Object value) {
+        o = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldBase(field) : o;
         long l = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
         boolean isVolatile = Modifier.isVolatile(field.getModifiers()) || Modifier.isFinal(field.getModifiers());
         if (isVolatile) {
@@ -45,7 +47,8 @@ public class UnsafeInternals {
         }
     }
 
-    public static Object getObject(Field field, Object o) {
+    public static Object getReference(Field field, Object o) {
+        o = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldBase(field) : o;
         long l = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
         boolean isVolatile = Modifier.isVolatile(field.getModifiers()) || Modifier.isFinal(field.getModifiers());
         if (isVolatile) {
@@ -59,12 +62,14 @@ public class UnsafeInternals {
         return UNSAFE;
     }
 
-    @SuppressWarnings("JavadocReference")
+    private static Object internalUnsafe;
+
+    @Deprecated
     public static @Nullable Object internalUnsafe() {
         if (internalUnsafe == null) {
             try {
                 Field f2 = Unsafe.class.getDeclaredField("theInternalUnsafe");
-                internalUnsafe = setAccessible(f2).get(null);
+                internalUnsafe = getReference(f2, null);
             } catch (Exception e) {
                 throw new RuntimeException("Couldn't access internal Unsafe", e);
             }
@@ -72,15 +77,39 @@ public class UnsafeInternals {
         return internalUnsafe;
     }
 
+    private static MethodHandle objectFieldOffset;
+
+    @Deprecated
     public static long getObjectFieldOffset(Class<?> clazz, String name) {
         try {
             if (objectFieldOffset == null) {
-                Method method = MakeSure.notNull(internalUnsafe()).getClass().getDeclaredMethod("objectFieldOffset", Class.class, String.class);
-                objectFieldOffset = setAccessible(method);
+                objectFieldOffset = ReflectionInternals.stealTrustedLookup()
+                        .findVirtual(internalUnsafe().getClass(), "objectFieldOffset", MethodType.methodType(long.class, Class.class, String.class));
             }
-            return (long) objectFieldOffset.invoke(internalUnsafe(), clazz, name);
-        } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+            return (long) objectFieldOffset.invokeWithArguments(internalUnsafe(), clazz, name);
+        } catch (Throwable e) {
             throw new RuntimeException(e);
         }
+    }
+
+    private static int offset = -1;
+
+    //https://stackoverflow.com/questions/55918972/unable-to-find-method-sun-misc-unsafe-defineclass
+    public static int getOverrideOffset() {
+        if (offset == -1) {
+            try {
+                Field f = Unsafe.class.getDeclaredField("theUnsafe"), f1 = Unsafe.class.getDeclaredField("theUnsafe");
+                f.setAccessible(true);
+                f1.setAccessible(false);
+                Unsafe unsafe = (Unsafe) f.get(null);
+                int i;//override boolean byte offset. should result in 12 for java 17
+                for (i = 0; unsafe.getBoolean(f, i) == unsafe.getBoolean(f1, i); i++) ;
+                offset = i;
+            } catch (Exception ignored) {
+                offset = 12; //fallback to 12 just in case
+            }
+        }
+        MakeSure.isTrue(offset != -1);
+        return offset;
     }
 }

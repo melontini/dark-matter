@@ -45,7 +45,7 @@ public class ModJsonProcessor {
     boolean done = false;
 
     ModJsonProcessor(ConfigManager<?> manager) {
-        this.json_key = manager.getMod().getMetadata().getId() + ":" + manager.getName() + "-config";
+        this.json_key = manager.getMod().getMetadata().getId() + ":config/" + manager.getName();
         this.manager = manager;
     }
 

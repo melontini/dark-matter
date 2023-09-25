@@ -3,7 +3,10 @@ package me.melontini.dark_matter.api.config;
 import me.melontini.dark_matter.api.config.interfaces.Fixup;
 import me.melontini.dark_matter.api.config.interfaces.Fixups;
 import me.melontini.dark_matter.impl.config.FixupsImpl;
+import org.jetbrains.annotations.ApiStatus;
 
+@ApiStatus.NonExtendable
+@SuppressWarnings("unused")
 public interface FixupsBuilder {
 
     static FixupsBuilder create() {

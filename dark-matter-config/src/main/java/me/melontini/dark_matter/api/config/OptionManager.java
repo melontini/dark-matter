@@ -11,6 +11,7 @@ import java.util.Optional;
 import java.util.Set;
 
 @ApiStatus.NonExtendable
+@SuppressWarnings("unused")
 public interface OptionManager<T> {
 
     boolean isModified(Field f);

@@ -7,6 +7,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.function.Function;
 
 @ApiStatus.NonExtendable
+@SuppressWarnings("unused")
 public interface OptionProcessorRegistry<T> {
     void register(String id, Processor<T> processor);
 

@@ -6,8 +6,7 @@
 
 package me.melontini.dark_matter.impl.danger.instrumentation;
 
-import me.melontini.dark_matter.api.base.reflect.ReflectionUtil;
-import me.melontini.dark_matter.api.base.util.MakeSure;
+import lombok.Getter;
 import me.melontini.dark_matter.api.danger.instrumentation.InstrumentationAccess;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.bytebuddy.agent.ByteBuddyAgent;
@@ -17,13 +16,8 @@ import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.instrument.Instrumentation;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.Field;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
@@ -44,6 +38,7 @@ public class InstrumentationInternals {
     public static final Path GAME_DIR = FabricLoader.getInstance().getGameDir();
     public static final Path EXPORT_DIR = GAME_DIR.resolve(".dark-matter/class");
     public static final Path AGENT_DIR = GAME_DIR.resolve(".dark-matter/agent");
+    @Getter
     private static Instrumentation instrumentation;
     private static boolean canInstrument = false;
 
@@ -53,11 +48,7 @@ public class InstrumentationInternals {
                 try {
                     return Class.forName(s);
                 } catch (ClassNotFoundException e) {
-                    try {
-                        return ReflectionUtil.accessRestrictedClass(s);
-                    } catch (Exception e1) {
-                        throw new RuntimeException(String.format("Couldn't access %s class!", s), e1);
-                    }
+                    throw new RuntimeException("Couldn't access %s class!".formatted(s), e);
                 }
             }).toArray(Class[]::new);
             retransform(transformer, export, classes);
@@ -105,10 +96,6 @@ public class InstrumentationInternals {
         return canInstrument;
     }
 
-    public static Instrumentation getInstrumentation() {
-        return instrumentation;
-    }
-
     static {
         try {
             if (Files.exists(EXPORT_DIR)) {
@@ -139,60 +126,16 @@ public class InstrumentationInternals {
         if (canInstrument()) return;
 
         try {
-            try {
-                instrumentation = tryAttachDarkAgent();
-            } catch (Exception e) {
-                DarkMatterLog.info("Failed to attach DM agent, trying the ByteBuddy one.");
-                instrumentation = ByteBuddyAgent.install();
-            }
-
+            Files.deleteIfExists(AGENT_DIR.resolve("dark_matter_instrumentation_agent.jar"));
+        } catch (IOException ignored) {
+            // rip
+        }
+        try {
+            instrumentation = ByteBuddyAgent.install();
             canInstrument = true;
             DarkMatterLog.info("Successfully attached instrumentation agent.");
         } catch (final Throwable throwable) {
             DarkMatterLog.error("An error occurred during an attempt to attach an instrumentation agent.", throwable);
-        }
-    }
-
-    private static Instrumentation tryAttachDarkAgent() throws Exception {
-        final String name = ManagementFactory.getRuntimeMXBean().getName();
-        final Path jarPath = AGENT_DIR.resolve("dark_matter_instrumentation_agent.jar");
-        final File jar = jarPath.toFile();
-
-        DarkMatterLog.info("Attaching instrumentation agent to VM.");
-
-        if (!Files.exists(jarPath)) {
-            createAgentJar(jarPath, jar);
-        } else {
-            try (InputStream stream = InstrumentationInternals.class.getClassLoader().getResourceAsStream("jar/dark_matter_instrumentation_agent.jar")) {
-                if (stream != null) {
-                    byte[] bytes = stream.readAllBytes();
-                    if (!Arrays.equals(Files.readAllBytes(jarPath), bytes)) {
-                        DarkMatterLog.info("Newer jar found, overwriting the old one...");
-                        Files.delete(jarPath);
-                        createAgentJar(jarPath, jar);
-                    }
-                } else {
-                    throw new NullPointerException("Couldn't find included \"jar/dark_matter_instrumentation_agent.jar\"! Couldn't check jar version! Trying to attach anyway...");
-                }
-            }
-        }
-        ByteBuddyAgent.attach(jar, name.substring(0, name.indexOf('@')));
-
-        final Field field = Class.forName("me.melontini.dark_matter.impl.danger.instrumentation.InstrumentationAgent", false, ClassLoader.getSystemClassLoader()).getField("instrumentation");
-        field.setAccessible(true);
-        return MakeSure.notNull((Instrumentation) field.get(null));
-    }
-
-    private static void createAgentJar(Path jarPath, File jar) throws IOException {
-        Files.createDirectories(jarPath.getParent());
-        try (InputStream stream = InstrumentationInternals.class.getClassLoader().getResourceAsStream("jar/dark_matter_instrumentation_agent.jar")) {
-            if (stream != null) {
-                try (FileOutputStream outputStream = new FileOutputStream(jar)) {
-                    outputStream.write(stream.readAllBytes());
-                }
-            } else {
-                throw new NullPointerException("Couldn't find included \"jar/dark_matter_instrumentation_agent.jar\"!");
-            }
         }
     }
 }

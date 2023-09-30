@@ -8,6 +8,7 @@ package me.melontini.dark_matter.impl.danger.instrumentation;
 
 import lombok.Getter;
 import me.melontini.dark_matter.api.danger.instrumentation.InstrumentationAccess;
+import me.melontini.dark_matter.api.danger.instrumentation.TransformationException;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.bytebuddy.agent.ByteBuddyAgent;
 import net.fabricmc.loader.api.FabricLoader;
@@ -23,6 +24,7 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
 import java.util.EnumSet;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
 /**
@@ -42,26 +44,23 @@ public class InstrumentationInternals {
     private static Instrumentation instrumentation;
     private static boolean canInstrument = false;
 
-    public static void retransform(InstrumentationAccess.AsmTransformer transformer, boolean export, String... cls) {
-        try {
-            Class<?>[] classes = Arrays.stream(cls).map(s -> {
-                try {
-                    return Class.forName(s);
-                } catch (ClassNotFoundException e) {
-                    throw new RuntimeException("Couldn't access %s class!".formatted(s), e);
-                }
-            }).toArray(Class[]::new);
-            retransform(transformer, export, classes);
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
+    public static void retransform(InstrumentationAccess.AsmTransformer transformer, boolean export, String... cls) throws TransformationException {
+        Class<?>[] classes = Arrays.stream(cls).map(s -> {
+            try {
+                return Class.forName(s);
+            } catch (ClassNotFoundException e) {
+                throw new RuntimeException("Couldn't access %s class!".formatted(s), e);
+            }
+        }).toArray(Class[]::new);
+        retransform(transformer, export, classes);
     }
 
-    public static void retransform(InstrumentationAccess.AsmTransformer transformer, boolean export, Class<?>... cls) {
-        try {
-            HashSet<Class<?>> classes = Arrays.stream(cls).collect(Collectors.toCollection(HashSet::new));
-            InstrumentationAccess.AbstractFileTransformer fileTransformer = (loader, className, classBeingRedefined, protectionDomain, classfileBuffer) -> {
-                if (classes.contains(classBeingRedefined)) {
+    public static void retransform(InstrumentationAccess.AsmTransformer transformer, boolean export, Class<?>... cls) throws TransformationException {
+        HashSet<Class<?>> classes = Arrays.stream(cls).collect(Collectors.toCollection(HashSet::new));
+        AtomicReference<Throwable> throwable = new AtomicReference<>();
+        InstrumentationAccess.AbstractFileTransformer fileTransformer = (loader, className, classBeingRedefined, protectionDomain, classfileBuffer) -> {
+            if (classes.contains(classBeingRedefined)) {
+                try {
                     ClassReader reader = new ClassReader(classfileBuffer);
                     ClassNode node = new ClassNode();
                     reader.accept(node, ClassReader.EXPAND_FRAMES);
@@ -79,16 +78,22 @@ public class InstrumentationInternals {
                         }
                     }
                     return clsFile;
+                } catch (Throwable t) {
+                    throwable.set(t);
+                    return classfileBuffer;
                 }
+            }
 
-                return classfileBuffer;
-            };
+            return classfileBuffer;
+        };
 
+        try {
             instrumentation.addTransformer(fileTransformer, true);
             instrumentation.retransformClasses(cls);
             instrumentation.removeTransformer(fileTransformer);
-        } catch (Exception e) {
-            throw new RuntimeException("Exception while retransforming classes. Have you subscribed to danger in fabric.mod.json?", e);
+            if (throwable.get() != null) throw throwable.get();
+        } catch (Throwable t) {
+            throw new TransformationException("Failed to retransform classes %s".formatted(Arrays.toString(cls)), t);
         }
     }
 

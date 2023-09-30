@@ -14,19 +14,19 @@ public class InstrumentationAccess {
         throw new UnsupportedOperationException();
     }
 
-    public static void retransform(AsmTransformer transformer, String... cls) {
+    public static void retransform(AsmTransformer transformer, String... cls) throws TransformationException {
         InstrumentationInternals.retransform(transformer, false, cls);
     }
 
-    public static void retransform(AsmTransformer transformer, boolean export, String... cls) {
+    public static void retransform(AsmTransformer transformer, boolean export, String... cls) throws TransformationException {
         InstrumentationInternals.retransform(transformer, export, cls);
     }
 
-    public static void retransform(AsmTransformer transformer, Class<?>... cls) {
+    public static void retransform(AsmTransformer transformer, Class<?>... cls) throws TransformationException {
         InstrumentationInternals.retransform(transformer, false, cls);
     }
 
-    public static void retransform(AsmTransformer transformer, boolean export, Class<?>... cls) {
+    public static void retransform(AsmTransformer transformer, boolean export, Class<?>... cls) throws TransformationException {
         InstrumentationInternals.retransform(transformer, export, cls);
     }
 

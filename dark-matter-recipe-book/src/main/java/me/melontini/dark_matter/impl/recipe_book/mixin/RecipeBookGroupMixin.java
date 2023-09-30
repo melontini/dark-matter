@@ -17,5 +17,4 @@ public class RecipeBookGroupMixin {
     private static void dark_matter$getGroups(RecipeBookCategory category, CallbackInfoReturnable<List<RecipeBookGroup>> cir) {
         RecipeBookInternals.getGroups(category).ifPresent(cir::setReturnValue);
     }
-
 }

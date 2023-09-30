@@ -9,16 +9,15 @@ import org.spongepowered.asm.mixin.Unique;
 public abstract class RecipeGroupButtonMixin implements PaginatedRecipeGroupButtonWidget {
 
     @Unique
-    private int page = -1;
+    private int dm$page = -1;
 
     @Override
     public int dm$getPage() {
-        return page;
+        return dm$page;
     }
 
     @Override
     public void dm$setPage(int page) {
-        this.page = page;
+        this.dm$page = page;
     }
-
 }

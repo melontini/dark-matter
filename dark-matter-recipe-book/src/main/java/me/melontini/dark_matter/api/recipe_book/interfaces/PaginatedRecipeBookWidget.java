@@ -22,6 +22,14 @@ public interface PaginatedRecipeBookWidget {
         throw new IllegalStateException("Interface not implemented");
     }
 
+    default void dm$incrementPage() {
+        this.dm$setPage(this.dm$getPage() + 1);
+    }
+
+    default void dm$decrementPage() {
+        this.dm$setPage(this.dm$getPage() - 1);
+    }
+
     default int dm$getPageCount() {
         throw new IllegalStateException("Interface not implemented");
     }

@@ -5,7 +5,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.recipebook.RecipeBookGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.book.RecipeBookCategory;
 import net.minecraft.registry.DynamicRegistryManager;
@@ -33,7 +33,7 @@ public final class RecipeBookHelper {
      * @param lookup The lookup function. Please note, the function must return null if the recipe doesn't match.
      */
     @Environment(EnvType.CLIENT)
-    public static void registerGroupLookup(@NotNull RecipeType<?> type, @NotNull Function<Recipe<?>, @Nullable RecipeBookGroup> lookup) {
+    public static void registerGroupLookup(@NotNull RecipeType<?> type, @NotNull Function<RecipeEntry<?>, @Nullable RecipeBookGroup> lookup) {
         RecipeBookInternals.registerGroupLookup(type, (recipe, dynamicRegistryManager) -> lookup.apply(recipe));
     }
 
@@ -48,7 +48,7 @@ public final class RecipeBookHelper {
      * @param lookup The lookup function. Please note, the function must return null if the recipe doesn't match.
      */
     @Environment(EnvType.CLIENT)
-    public static void registerGroupLookup(@NotNull RecipeType<?> type, @NotNull BiFunction<Recipe<?>, @Nullable DynamicRegistryManager, @Nullable RecipeBookGroup> lookup) {
+    public static void registerGroupLookup(@NotNull RecipeType<?> type, @NotNull BiFunction<RecipeEntry<?>, @Nullable DynamicRegistryManager, @Nullable RecipeBookGroup> lookup) {
         RecipeBookInternals.registerGroupLookup(type, lookup);
     }
 
@@ -219,7 +219,7 @@ public final class RecipeBookHelper {
 
     @Deprecated(since = "2.0.0")
     @Environment(EnvType.CLIENT)
-    public static void addRecipePredicate(RecipeType<?> type, Function<Recipe<?>, RecipeBookGroup> function) {
+    public static void addRecipePredicate(RecipeType<?> type, Function<RecipeEntry<?>, RecipeBookGroup> function) {
         registerGroupLookup(type, function);
     }
 

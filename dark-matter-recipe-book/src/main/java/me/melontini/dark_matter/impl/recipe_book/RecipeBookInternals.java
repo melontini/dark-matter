@@ -8,7 +8,7 @@ import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.recipebook.RecipeBookGroup;
 import net.minecraft.item.ItemStack;
-import net.minecraft.recipe.Recipe;
+import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.recipe.RecipeType;
 import net.minecraft.recipe.book.RecipeBookCategory;
 import net.minecraft.recipe.book.RecipeBookOptions;
@@ -27,7 +27,7 @@ public final class RecipeBookInternals {
     }
 
     @Environment(EnvType.CLIENT)
-    private static final Map<RecipeType<?>, List<BiFunction<Recipe<?>, DynamicRegistryManager, RecipeBookGroup>>> GROUP_LOOKUPS = new HashMap<>();
+    private static final Map<RecipeType<?>, List<BiFunction<RecipeEntry<?>, DynamicRegistryManager, RecipeBookGroup>>> GROUP_LOOKUPS = new HashMap<>();
 
     @Environment(EnvType.CLIENT)
     private static final Map<RecipeBookCategory, List<RecipeBookGroup>> GROUPS_FOR_CATEGORY = new HashMap<>();
@@ -51,7 +51,7 @@ public final class RecipeBookInternals {
     }
 
     @Environment(EnvType.CLIENT)
-    public static void registerGroupLookup(RecipeType<?> type, BiFunction<Recipe<?>, DynamicRegistryManager, RecipeBookGroup> function) {
+    public static void registerGroupLookup(RecipeType<?> type, BiFunction<RecipeEntry<?>, DynamicRegistryManager, RecipeBookGroup> function) {
         MakeSure.notNulls(type, function);
         GROUP_LOOKUPS.computeIfAbsent(type, type1 -> new ArrayList<>(1)).add(0, function);
     }
@@ -126,7 +126,7 @@ public final class RecipeBookInternals {
     }
 
     @Environment(EnvType.CLIENT)
-    public static Optional<List<BiFunction<Recipe<?>, DynamicRegistryManager, RecipeBookGroup>>> getLookups(RecipeType<?> type) {
+    public static Optional<List<BiFunction<RecipeEntry<?>, DynamicRegistryManager, RecipeBookGroup>>> getLookups(RecipeType<?> type) {
         return GROUP_LOOKUPS.containsKey(type) ? Optional.of(Collections.unmodifiableList(GROUP_LOOKUPS.get(type))) : Optional.empty();
     }
 

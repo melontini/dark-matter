@@ -5,7 +5,6 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.network.ClientPlayNetworkHandler;
 import net.minecraft.client.recipebook.ClientRecipeBook;
 import net.minecraft.client.recipebook.RecipeBookGroup;
-import net.minecraft.recipe.Recipe;
 import net.minecraft.recipe.RecipeEntry;
 import net.minecraft.registry.DynamicRegistryManager;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,8 +24,8 @@ public class ClientRecipeBookMixin {
                 .map(ClientPlayNetworkHandler::getRegistryManager).orElse(null);
         RecipeBookInternals.getLookups(recipe.value().getType()).map(functions -> {
             RecipeBookGroup result;
-            for (BiFunction<Recipe<?>, DynamicRegistryManager, RecipeBookGroup> function : functions) {
-                if ((result = function.apply(recipe.value(), rm)) != null) {
+            for (BiFunction<RecipeEntry<?>, DynamicRegistryManager, RecipeBookGroup> function : functions) {
+                if ((result = function.apply(recipe, rm)) != null) {
                     return result;
                 }
             }

@@ -34,7 +34,7 @@ public class RecipeBookPageButton extends ButtonWidget {
             int v = this.active ? 0 : 13;
 
             RenderSystem.enableDepthTest();
-            this.drawTexture(context, TEXTURE, this.getX(), this.getY(), u + (next ? 14 : 0), v, 0, this.width, this.height, 256, 256);
+            context.drawTexture(TEXTURE, this.getX(), this.getY(), u + (next ? 14 : 0), v, this.width, this.height);
             if (this.hovered && MinecraftClient.getInstance().currentScreen != null) {
                 context.drawTooltip(MinecraftClient.getInstance().textRenderer, TextUtil.literal(widget.dm$getPage() + 1 + "/" + widget.dm$getPageCount()), mouseX, mouseY);
             }

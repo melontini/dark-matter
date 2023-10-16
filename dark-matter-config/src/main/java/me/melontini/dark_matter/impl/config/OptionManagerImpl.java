@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.config;
 
 import me.melontini.dark_matter.api.base.util.PrependingLogger;
+import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import me.melontini.dark_matter.api.base.util.classes.Tuple;
 import me.melontini.dark_matter.api.config.ConfigManager;
 import me.melontini.dark_matter.api.config.OptionManager;
@@ -21,7 +22,7 @@ public class OptionManagerImpl<T> implements OptionManager<T>, OptionProcessorRe
     private final ConfigManager<T> manager;
     private final Function<TextEntry.InfoHolder<T>, TextEntry> defaultReason;
     private final Map<String, Function<TextEntry.InfoHolder<T>, TextEntry>> customReasons = new HashMap<>();
-    private final PrependingLogger logger;
+    private final Lazy<PrependingLogger> logger;
 
     private final Map<Field, Set<String>> modifiedFields = new HashMap<>();
 
@@ -31,7 +32,7 @@ public class OptionManagerImpl<T> implements OptionManager<T>, OptionProcessorRe
         this.manager = manager;
         this.modJsonProcessor = new ModJsonProcessor(manager);
         this.defaultReason = defaultReason;
-        this.logger = PrependingLogger.get(manager.getMod().getMetadata().getName() + "/OptionManager");
+        this.logger = Lazy.of(() -> () -> PrependingLogger.get(manager.getMod().getMetadata().getName() + "/OptionManager"));
 
         register(manager.getMod().getMetadata().getId() + ":custom_values", manager1 -> {
             if (!this.modJsonProcessor.done) {
@@ -52,10 +53,10 @@ public class OptionManagerImpl<T> implements OptionManager<T>, OptionProcessorRe
             var config = entry.processor().process(this.manager);
             if (config != null && !config.isEmpty()) {
 
-                this.logger.info("Processor: {}", key);
+                this.logger.get().info("Processor: {}", key);
                 StringBuilder builder = new StringBuilder().append("Config: ");
                 config.keySet().forEach(s -> builder.append(s).append("=").append(config.get(s)).append("; "));
-                this.logger.info(builder.toString());
+                this.logger.get().info(builder.toString());
 
                 configure(key, config);
             }
@@ -128,6 +129,11 @@ public class OptionManagerImpl<T> implements OptionManager<T>, OptionProcessorRe
         } catch (NoSuchFieldException e) {
             return Optional.empty();
         }
+    }
+
+    @Override
+    public ConfigManager<T> getConfigManager() {
+        return this.manager;
     }
 
     @Override

@@ -1,6 +1,5 @@
 package me.melontini.dark_matter.impl.base.util.mixin;
 
-import net.fabricmc.loader.api.MappingResolver;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 
@@ -75,21 +74,5 @@ public class AsmImpl {
 
     public static List<Map<String, Object>> emptyAnnotationList() {
         return EMPTY_ANN_LIST;
-    }
-
-    public static String remapMethodDescriptor(Type descriptor, MappingResolver resolver) {
-        StringBuilder mappedDesc = new StringBuilder("(");
-        for (Type argumentType : descriptor.getArgumentTypes()) {
-            mappedDesc.append(getDescriptor(argumentType.getDescriptor(), resolver));
-        }
-        mappedDesc.append(")");
-        mappedDesc.append(getDescriptor(descriptor.getReturnType().getDescriptor(), resolver));
-        return mappedDesc.toString();
-    }
-
-    public static String getDescriptor(String arg, MappingResolver resolver) {
-        if (arg.startsWith("L")) arg = "L" + resolver.mapClassName("intermediary", arg.substring(1, arg.length() - 1).replace("/", ".")).replace(".", "/") + ";";
-        if (arg.startsWith("[")) arg = "[L" + resolver.mapClassName("intermediary", arg.substring(2, arg.length() - 1).replace("/", ".")).replace(".", "/") + ";";
-        return arg;
     }
 }

@@ -2,7 +2,6 @@ package me.melontini.dark_matter.api.minecraft.world;
 
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.MathStuff;
-import me.melontini.dark_matter.api.base.util.Utilities;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 
@@ -33,7 +32,7 @@ public class WorldUtil {
             if (i > j) {
                 return Optional.empty();
             }
-            var pos = new BlockPos(blockPos.getX() + MathStuff.nextInt(Utilities.RANDOM, -range, range), blockPos.getY() + MathStuff.nextInt(Utilities.RANDOM, -range, range), blockPos.getZ() + MathStuff.nextInt(Utilities.RANDOM, -range, range));
+            var pos = new BlockPos(blockPos.getX() + MathStuff.nextInt(MathStuff.threadRandom(), -range, range), blockPos.getY() + MathStuff.nextInt(MathStuff.threadRandom(), -range, range), blockPos.getZ() + MathStuff.nextInt(MathStuff.threadRandom(), -range, range));
             if (world.getBlockState(pos.up()).isAir() && world.getBlockState(pos).isAir() && predicate.test(world, pos) && predicate.test(world, pos)) {
                 return Optional.of(pos);
             }

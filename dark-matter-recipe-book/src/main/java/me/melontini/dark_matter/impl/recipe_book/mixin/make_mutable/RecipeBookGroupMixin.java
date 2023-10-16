@@ -49,5 +49,4 @@ public class RecipeBookGroupMixin {
         SEARCH_MAP.forEach((group, groups) -> newMap.put(group, new ArrayList<>(groups)));
         SEARCH_MAP = newMap;
     }
-
 }

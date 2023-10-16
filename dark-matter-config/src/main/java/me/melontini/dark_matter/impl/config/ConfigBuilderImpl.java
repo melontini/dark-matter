@@ -1,10 +1,15 @@
 package me.melontini.dark_matter.impl.config;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import me.melontini.dark_matter.api.config.*;
+import me.melontini.dark_matter.api.base.reflect.Reflect;
+import me.melontini.dark_matter.api.base.util.Utilities;
+import me.melontini.dark_matter.api.config.ConfigBuilder;
+import me.melontini.dark_matter.api.config.ConfigManager;
+import me.melontini.dark_matter.api.config.OptionProcessorRegistry;
+import me.melontini.dark_matter.api.config.RedirectsBuilder;
 import me.melontini.dark_matter.api.config.interfaces.ConfigClassScanner;
 import me.melontini.dark_matter.api.config.interfaces.TextEntry;
+import me.melontini.dark_matter.api.config.serializers.ConfigSerializer;
+import me.melontini.dark_matter.api.config.serializers.gson.GsonSerializers;
 import net.fabricmc.loader.api.ModContainer;
 
 import java.lang.reflect.Field;
@@ -13,6 +18,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+import static me.melontini.dark_matter.api.base.util.MakeSure.notNull;
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
 public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
@@ -21,36 +27,16 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
     private final Class<T> cls;
     private final ModContainer mod;
 
-    private Supplier<T> ctx = null;
-    private Consumer<OptionProcessorRegistry<T>> registrar = null;
-    private ConfigClassScanner scanner = null;
-    private Gson gson = new GsonBuilder().setPrettyPrinting().create();
-    private Function<TextEntry.InfoHolder<T>, TextEntry> reasonFactory = (holder) -> TextEntry.translatable(holder.manager().getMod().getMetadata().getId() + ".config.option_manager.reason." + holder.processor());
+    private Function<ConfigManager<T>, ConfigSerializer<T>> serializer;
+    private Supplier<T> ctx;
+    private Consumer<OptionProcessorRegistry<T>> registrar;
+    private ConfigClassScanner scanner;
+    private Function<TextEntry.InfoHolder<T>, TextEntry> reasonFactory;
 
-    private final FixupsBuilder fixups = FixupsBuilder.create();
     private final RedirectsBuilder redirects = RedirectsBuilder.create();
 
-    private Getter<T> getter = (manager, option) -> {
-        List<Field> fields = manager.getFields(option);
-        Object obj = manager.getConfig();
-        for (Field field : fields) {
-            field.setAccessible(true);
-            obj = field.get(obj);
-        }
-        return cast(obj);
-    };
-    private Setter<T> setter = (manager, option, value) -> {
-        List<Field> fields = manager.getFields(option);
-        Object obj = manager.getConfig();
-        for (int i = 0; i < fields.size() - 1; i++) {
-            Field field = fields.get(i);
-            field.setAccessible(true);
-            obj = field.get(obj);
-        }
-        Field f = fields.get(fields.size() - 1);
-        f.setAccessible(true);
-        f.set(obj, value);
-    };
+    private Getter<T> getter;
+    private Setter<T> setter;
 
     public ConfigBuilderImpl(Class<T> cls, ModContainer mod, String name) {
         this.name = name;
@@ -65,8 +51,8 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
     }
 
     @Override
-    public ConfigBuilderImpl<T> fixups(Consumer<FixupsBuilder> fixups) {
-        fixups.accept(this.fixups);
+    public ConfigBuilder<T> serializer(Function<ConfigManager<T>, ConfigSerializer<T>> serializer) {
+        this.serializer = serializer;
         return this;
     }
 
@@ -88,38 +74,66 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
         return this;
     }
 
-    public ConfigBuilderImpl<T> gson(Gson gson) {
-        this.gson = gson;
-        return this;
-    }
-
     @Override
-    public ConfigBuilder<T> processors(Consumer<OptionProcessorRegistry<T>> consumer) {
+    public ConfigBuilderImpl<T> processors(Consumer<OptionProcessorRegistry<T>> consumer) {
         this.registrar = consumer;
         return this;
     }
 
     @Override
-    public ConfigBuilder<T> scanner(ConfigClassScanner scanner) {
+    public ConfigBuilderImpl<T> scanner(ConfigClassScanner scanner) {
         this.scanner = scanner;
         return this;
     }
 
     @Override
-    public ConfigBuilder<T> defaultReason(Function<TextEntry.InfoHolder<T>, TextEntry> reason) {
+    public ConfigBuilderImpl<T> defaultReason(Function<TextEntry.InfoHolder<T>, TextEntry> reason) {
         this.reasonFactory = reason;
         return this;
     }
 
     @Override
     public ConfigManager<T> build() {
-        ConfigManagerImpl<T> configManager = new ConfigManagerImpl<>(this.cls, this.mod, this.name, this.gson);
-        configManager.setupOptionManager(this.registrar, this.reasonFactory);
-        configManager.setAccessors(this.getter, this.setter);
-        configManager.setFixups(this.fixups);
-        configManager.setRedirects(this.redirects);
-        configManager.setScanner(this.scanner);
-        configManager.afterBuild(this.ctx);
-        return configManager;
+        return new ConfigManagerImpl<>(this.cls, this.mod, this.name)
+        .setupOptionManager(this.registrar, notNull(this.reasonFactory, this::defaultReason))
+        .setAccessors(notNull(this.getter, this::defaultGetter), notNull(this.setter, this::defaultSetter))
+        .setRedirects(this.redirects)
+        .setScanner(this.scanner)
+        .afterBuild(notNull(this.serializer, () -> GsonSerializers::create), notNull(this.ctx, () -> defaultCtx(this.cls)));
+    }
+
+    private static <T> Supplier<T> defaultCtx(Class<T> cls) {
+        return () -> Utilities.supplyUnchecked(() -> Reflect.setAccessible(cls.getDeclaredConstructor()).newInstance());
+    }
+
+    private Function<TextEntry.InfoHolder<T>, TextEntry> defaultReason() {
+        return (holder) -> TextEntry.translatable(holder.manager().getMod().getMetadata().getId() + ".config.option_manager.reason." + holder.processor());
+    }
+
+    private Getter<T> defaultGetter() {
+        return (manager, option) -> {
+            List<Field> fields = manager.getFields(option);
+            Object obj = manager.getConfig();
+            for (Field field : fields) {
+                field.setAccessible(true);
+                obj = field.get(obj);
+            }
+            return cast(obj);
+        };
+    }
+
+    private Setter<T> defaultSetter() {
+        return (manager, option, value) -> {
+            List<Field> fields = manager.getFields(option);
+            Object obj = manager.getConfig();
+            for (int i = 0; i < fields.size() - 1; i++) {
+                Field field = fields.get(i);
+                field.setAccessible(true);
+                obj = field.get(obj);
+            }
+            Field f = fields.get(fields.size() - 1);
+            f.setAccessible(true);
+            f.set(obj, value);
+        };
     }
 }

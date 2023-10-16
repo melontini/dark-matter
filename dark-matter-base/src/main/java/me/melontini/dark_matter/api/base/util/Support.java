@@ -1,11 +1,11 @@
 package me.melontini.dark_matter.api.base.util;
 
 import me.melontini.dark_matter.api.base.util.classes.ThrowingRunnable;
+import me.melontini.dark_matter.api.base.util.classes.ThrowingSupplier;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 
 import java.util.Optional;
-import java.util.concurrent.Callable;
 import java.util.function.Supplier;
 
 public class Support {
@@ -23,7 +23,7 @@ public class Support {
         return Optional.empty();
     }
 
-    public static void runWeak(String modId, Supplier<ThrowingRunnable> runnable) {
+    public static <E extends Throwable> void runWeak(String modId, Supplier<ThrowingRunnable<E>> runnable) {
         if (FabricLoader.getInstance().isModLoaded(modId)) {
             try {
                 runnable.get().run();
@@ -33,10 +33,10 @@ public class Support {
         }
     }
 
-    public static <T> Optional<T> getWeak(String modId, Supplier<Callable<T>> supplier) {
+    public static <T, E extends Throwable> Optional<T> getWeak(String modId, Supplier<ThrowingSupplier<T, E>> supplier) {
         if (FabricLoader.getInstance().isModLoaded(modId)) {
             try {
-                return Optional.ofNullable(supplier.get().call());
+                return Optional.ofNullable(supplier.get().get());
             } catch (Throwable e) {
                 return Optional.empty();
             }
@@ -58,7 +58,7 @@ public class Support {
         return Optional.empty();
     }
 
-    public static void runWeak(EnvType envType, Supplier<ThrowingRunnable> runnable) {
+    public static <E extends Throwable> void runWeak(EnvType envType, Supplier<ThrowingRunnable<E>> runnable) {
         if (FabricLoader.getInstance().getEnvironmentType() == envType) {
             try {
                 runnable.get().run();
@@ -68,10 +68,10 @@ public class Support {
         }
     }
 
-    public static <T> Optional<T> getWeak(EnvType envType, Supplier<Callable<T>> supplier) {
+    public static <T, E extends Throwable> Optional<T> getWeak(EnvType envType, Supplier<ThrowingSupplier<T, E>> supplier) {
         if (FabricLoader.getInstance().getEnvironmentType() == envType) {
             try {
-                return Optional.ofNullable(supplier.get().call());
+                return Optional.ofNullable(supplier.get().get());
             } catch (Throwable e) {
                 return Optional.empty();
             }
@@ -96,7 +96,7 @@ public class Support {
         }
     }
 
-    public static void runEnvWeak(Supplier<ThrowingRunnable> clientRunnable, Supplier<ThrowingRunnable> serverRunnable) {
+    public static <E extends Throwable> void runEnvWeak(Supplier<ThrowingRunnable<E>> clientRunnable, Supplier<ThrowingRunnable<E>> serverRunnable) {
         try {
             if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
                 clientRunnable.get().run();
@@ -108,12 +108,12 @@ public class Support {
         }
     }
 
-    public static <T> Optional<T> getEnvWeak(Supplier<Callable<T>> clientSupplier, Supplier<Callable<T>> serverSupplier) {
+    public static <T, E extends Throwable> Optional<T> getEnvWeak(Supplier<ThrowingSupplier<T, E>> clientSupplier, Supplier<ThrowingSupplier<T, E>> serverSupplier) {
         try {
             if (FabricLoader.getInstance().getEnvironmentType() == EnvType.CLIENT) {
-                return Optional.ofNullable(clientSupplier.get().call());
+                return Optional.ofNullable(clientSupplier.get().get());
             } else {
-                return Optional.ofNullable(serverSupplier.get().call());
+                return Optional.ofNullable(serverSupplier.get().get());
             }
         } catch (Throwable e) {
             return Optional.empty();

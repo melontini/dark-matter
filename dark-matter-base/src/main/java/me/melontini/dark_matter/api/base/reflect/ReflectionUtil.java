@@ -108,7 +108,7 @@ public class ReflectionUtil {
     @Deprecated(forRemoval = true)
     public static @NotNull MethodHandles.Lookup mockLookupClass(Class<?> clazz) {
         try {
-            return MiscReflectionInternals.mockLookupClass(clazz);
+            return MiscReflectionInternals.lookupIn(clazz);
         } catch (Throwable e) {
             throw new RuntimeException("Couldn't mock lookup class", e);
         }

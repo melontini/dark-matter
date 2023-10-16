@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.config;
 
 import me.melontini.dark_matter.api.base.util.Utilities;
+import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import me.melontini.dark_matter.api.config.ConfigManager;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.fabricmc.loader.api.FabricLoader;
@@ -15,7 +16,7 @@ import java.util.function.Function;
 
 public class ModJsonProcessor {
 
-    private static final Map<Class<?>, Function<CustomValue, ?>> TYPES = Utilities.consume(new HashMap<>(), map -> {
+    private static final Lazy<Map<Class<?>, Function<CustomValue, ?>>> TYPES = Lazy.of(() -> () -> Utilities.consume(new HashMap<>(), map -> {
         map.put(Byte.class, element -> element.getAsNumber().byteValue());
         map.put(Short.class, element -> element.getAsNumber().shortValue());
         map.put(Integer.class, element -> element.getAsNumber().intValue());
@@ -36,7 +37,7 @@ public class ModJsonProcessor {
         map.put(String.class, CustomValue::getAsString);
         map.put(Character.class, element -> element.getAsString().charAt(0));
         map.put(char.class, element -> element.getAsString().charAt(0));
-    });
+    }));
 
     final Map<String, Object> modJson = new LinkedHashMap<>();
     private final Map<Field, Set<ModContainer>> modBlame = new HashMap<>();
@@ -84,7 +85,7 @@ public class ModJsonProcessor {
                 continue;
             }
 
-            var converter = TYPES.get(f.getType());
+            var converter = TYPES.get().get(f.getType());
             if (converter == null) {
                 DarkMatterLog.error("Unsupported {} type. Mod: {}, Type: {}", this.json_key, mod.getMetadata().getId(), f.getType());
                 continue;

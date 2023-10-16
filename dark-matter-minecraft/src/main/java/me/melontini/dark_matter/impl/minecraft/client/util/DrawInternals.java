@@ -3,6 +3,7 @@ package me.melontini.dark_matter.impl.minecraft.client.util;
 import com.mojang.blaze3d.platform.GlStateManager;
 import com.mojang.blaze3d.systems.RenderSystem;
 import me.melontini.dark_matter.api.base.util.ColorUtil;
+import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.MinecraftClient;
@@ -30,10 +31,14 @@ import java.util.Optional;
 @ApiStatus.Internal
 public class DrawInternals {
 
-    public static final FakeScreen FAKE_SCREEN = new FakeScreen();
+    public static final Lazy<FakeScreen> FAKE_SCREEN = Lazy.of(() -> FakeScreen::new);
 
     private DrawInternals() {
         throw new UnsupportedOperationException();
+    }
+
+    public static FakeScreen getFakeScreen() {
+        return FAKE_SCREEN.get();
     }
 
     public static void renderTooltip(DrawContext context, ItemStack stack, float x, float y) {

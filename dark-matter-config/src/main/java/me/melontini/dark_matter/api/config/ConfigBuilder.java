@@ -1,8 +1,8 @@
 package me.melontini.dark_matter.api.config;
 
-import com.google.gson.Gson;
 import me.melontini.dark_matter.api.config.interfaces.ConfigClassScanner;
 import me.melontini.dark_matter.api.config.interfaces.TextEntry;
+import me.melontini.dark_matter.api.config.serializers.ConfigSerializer;
 import me.melontini.dark_matter.impl.config.ConfigBuilderImpl;
 import net.fabricmc.loader.api.ModContainer;
 import org.jetbrains.annotations.ApiStatus;
@@ -13,6 +13,7 @@ import java.util.function.Supplier;
 
 /**
  * All parameters outside {@link ConfigBuilder#create(Class, ModContainer, String)} are optional.
+ *
  * @param <T> your desired config class
  */
 @ApiStatus.NonExtendable
@@ -24,19 +25,18 @@ public interface ConfigBuilder<T> {
     }
 
     /**
-     * The constructor used to create an instance of your config class.
-     * <p>
-     * Will fall back to reflection if not provided.
+     * Allows to build the config directly, instead of using reflection. Will fall back to reflection if not provided.
      */
     ConfigBuilder<T> constructor(Supplier<T> ctx);
 
     /**
-     * Allows you to register new fix-ups,
-     * which will be used to update the {@link com.google.gson.JsonObject} before parsing.
+     * The serializer used to create load and save your config. Defaults to GSON with no fixups.
      * <p>
-     * The entrypoint for this is {@code {modid}:config/{config}/fixups}
+     * Just a note, the function is called before the config is set.
+     * <p>
+     * {@link me.melontini.dark_matter.api.config.serializers.gson.GsonSerializers}
      */
-    ConfigBuilder<T> fixups(Consumer<FixupsBuilder> fixups);
+    ConfigBuilder<T> serializer(Function<ConfigManager<T>, ConfigSerializer<T>> ctx);
 
     /**
      * Allows you to register redirects,
@@ -58,11 +58,6 @@ public interface ConfigBuilder<T> {
     ConfigBuilder<T> setter(Setter<T> setter);
 
     /**
-     * The Gson instance used to parse the config file.
-     */
-    ConfigBuilder<T> gson(Gson gson);
-
-    /**
      * Allows you to register new processors, which can be used to force set a value if some conditions are bet.
      * <p>
      * The entrypoint for this is {@code {modid}:config/{config}/processors}
@@ -72,6 +67,11 @@ public interface ConfigBuilder<T> {
     ConfigBuilder<T> scanner(ConfigClassScanner scanner);
 
     ConfigBuilder<T> defaultReason(Function<TextEntry.InfoHolder<T>, TextEntry> reason);
+
+    default ConfigBuilder<T> attach(Consumer<ConfigBuilder<T>> attacher) {
+        attacher.accept(this);
+        return this;
+    }
 
     ConfigManager<T> build();
 

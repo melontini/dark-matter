@@ -29,4 +29,6 @@ public interface OptionManager<T> {
     Set<ModContainer> blameModJson(String option) throws NoSuchFieldException;
 
     Optional<TextEntry> getReason(String processor, String option);
+
+    ConfigManager<T> getConfigManager();
 }

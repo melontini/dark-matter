@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftClientMixin {
     @Inject(method = "onResolutionChanged", at = @At("TAIL"))
     private void dark_matter$beforeInit(CallbackInfo ci) {
-        if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getWindow() != null) DrawInternals.FAKE_SCREEN.reset(MinecraftClient.getInstance(), MinecraftClient.getInstance().getWindow().getScaledWidth(), MinecraftClient.getInstance().getWindow().getScaledHeight());
+        if (MinecraftClient.getInstance() != null && MinecraftClient.getInstance().getWindow() != null) DrawInternals.getFakeScreen().reset(MinecraftClient.getInstance(), MinecraftClient.getInstance().getWindow().getScaledWidth(), MinecraftClient.getInstance().getWindow().getScaledHeight());
     }
 }

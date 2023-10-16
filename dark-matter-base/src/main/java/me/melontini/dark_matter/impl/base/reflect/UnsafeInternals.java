@@ -2,6 +2,7 @@ package me.melontini.dark_matter.impl.base.reflect;
 
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.Utilities;
+import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
@@ -19,7 +20,7 @@ public class UnsafeInternals {
         throw new UnsupportedOperationException();
     }
 
-    private static final Unsafe UNSAFE = Utilities.supply(() -> {
+    private static final Lazy<Unsafe> UNSAFE = Lazy.of(() -> () -> {
         try {
             Field unsafe = Unsafe.class.getDeclaredField("theUnsafe");
             unsafe.setAccessible(true);
@@ -37,56 +38,48 @@ public class UnsafeInternals {
     });
 
     public static void setReference(Field field, Object o, Object value) {
-        o = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldBase(field) : o;
-        long l = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
+        o = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldBase(field) : o;
+        long l = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field);
         boolean isVolatile = Modifier.isVolatile(field.getModifiers()) || Modifier.isFinal(field.getModifiers());
         if (isVolatile) {
-            UNSAFE.putObjectVolatile(o, l, value);
+            getUnsafe().putObjectVolatile(o, l, value);
         } else {
-            UNSAFE.putObject(o, l, value);
+            getUnsafe().putObject(o, l, value);
         }
     }
 
     public static Object getReference(Field field, Object o) {
-        o = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldBase(field) : o;
-        long l = Modifier.isStatic(field.getModifiers()) ? UNSAFE.staticFieldOffset(field) : UNSAFE.objectFieldOffset(field);
+        o = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldBase(field) : o;
+        long l = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field);
         boolean isVolatile = Modifier.isVolatile(field.getModifiers()) || Modifier.isFinal(field.getModifiers());
         if (isVolatile) {
-            return UNSAFE.getObjectVolatile(o, l);
+            return getUnsafe().getObjectVolatile(o, l);
         } else {
-            return UNSAFE.getObject(o, l);
+            return getUnsafe().getObject(o, l);
         }
+    }
+
+    public static <T> T allocateInstance(Class<T> cls) throws InstantiationException {
+        return Utilities.cast(getUnsafe().allocateInstance(cls));
     }
 
     public static Unsafe getUnsafe() {
-        return UNSAFE;
+        return UNSAFE.get();
     }
 
-    private static Object internalUnsafe;
+    private static final Lazy<Object> internalUnsafe = Lazy.of(() -> () -> getReference(Unsafe.class.getDeclaredField("theInternalUnsafe"), null));
 
     @Deprecated
     public static @Nullable Object internalUnsafe() {
-        if (internalUnsafe == null) {
-            try {
-                Field f2 = Unsafe.class.getDeclaredField("theInternalUnsafe");
-                internalUnsafe = getReference(f2, null);
-            } catch (Exception e) {
-                throw new RuntimeException("Couldn't access internal Unsafe", e);
-            }
-        }
-        return internalUnsafe;
+        return internalUnsafe.get();
     }
 
-    private static MethodHandle objectFieldOffset;
+    private static final Lazy<MethodHandle> objectFieldOffset = Lazy.of(() -> () -> ReflectionInternals.trustedLookup().findVirtual(internalUnsafe().getClass(), "objectFieldOffset", MethodType.methodType(long.class, Class.class, String.class)));
 
     @Deprecated
     public static long getObjectFieldOffset(Class<?> clazz, String name) {
         try {
-            if (objectFieldOffset == null) {
-                objectFieldOffset = ReflectionInternals.stealTrustedLookup()
-                        .findVirtual(internalUnsafe().getClass(), "objectFieldOffset", MethodType.methodType(long.class, Class.class, String.class));
-            }
-            return (long) objectFieldOffset.invokeWithArguments(internalUnsafe(), clazz, name);
+            return (long) objectFieldOffset.get().invokeWithArguments(internalUnsafe(), clazz, name);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }

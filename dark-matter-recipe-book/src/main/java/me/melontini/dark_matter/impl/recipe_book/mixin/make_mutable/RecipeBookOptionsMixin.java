@@ -26,5 +26,4 @@ public class RecipeBookOptionsMixin {
     private static void dark_matter$makeMutable(CallbackInfo ci) {
         CATEGORY_OPTION_NAMES = new HashMap<>(CATEGORY_OPTION_NAMES);
     }
-
 }

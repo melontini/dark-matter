@@ -7,18 +7,26 @@
 package me.melontini.dark_matter.impl.danger.instrumentation;
 
 import lombok.Getter;
+import me.melontini.dark_matter.api.base.reflect.MiscReflection;
+import me.melontini.dark_matter.api.base.util.MakeSure;
+import me.melontini.dark_matter.api.base.util.classes.ThrowableStorage;
 import me.melontini.dark_matter.api.danger.instrumentation.InstrumentationAccess;
 import me.melontini.dark_matter.api.danger.instrumentation.TransformationException;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.bytebuddy.agent.ByteBuddyAgent;
+import net.bytebuddy.agent.Installer;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 
+import java.io.File;
 import java.io.IOException;
 import java.lang.instrument.Instrumentation;
+import java.lang.invoke.MethodHandles;
+import java.lang.invoke.MethodType;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
@@ -57,7 +65,7 @@ public class InstrumentationInternals {
 
     public static void retransform(InstrumentationAccess.AsmTransformer transformer, boolean export, Class<?>... cls) throws TransformationException {
         HashSet<Class<?>> classes = Arrays.stream(cls).collect(Collectors.toCollection(HashSet::new));
-        AtomicReference<Throwable> throwable = new AtomicReference<>();
+        ThrowableStorage<Throwable> throwable = ThrowableStorage.of();
         InstrumentationAccess.AbstractFileTransformer fileTransformer = (loader, className, classBeingRedefined, protectionDomain, classfileBuffer) -> {
             if (classes.contains(classBeingRedefined)) {
                 try {
@@ -91,7 +99,7 @@ public class InstrumentationInternals {
             instrumentation.addTransformer(fileTransformer, true);
             instrumentation.retransformClasses(cls);
             instrumentation.removeTransformer(fileTransformer);
-            if (throwable.get() != null) throw throwable.get();
+            throwable.tryThrow();
         } catch (Throwable t) {
             throw new TransformationException("Failed to retransform classes %s".formatted(Arrays.toString(cls)), t);
         }
@@ -136,11 +144,44 @@ public class InstrumentationInternals {
             // rip
         }
         try {
-            instrumentation = ByteBuddyAgent.install();
+            try {
+                instrumentation = unsafeAttach();
+            } catch (Throwable t) {
+                DarkMatterLog.info("Failed to attach using InstrumentationImpl#loadAgent, trying default.", t);
+                instrumentation = ByteBuddyAgent.install();
+            }
+
             canInstrument = true;
             DarkMatterLog.info("Successfully attached instrumentation agent.");
         } catch (final Throwable throwable) {
             DarkMatterLog.error("An error occurred during an attempt to attach an instrumentation agent.", throwable);
         }
+    }
+
+    private static Instrumentation unsafeAttach() throws Throwable {
+        File self = AgentProvider.createJarFile();
+
+        try (var is = Installer.class.getClassLoader().getResourceAsStream(Installer.class.getName().replace(".", "/") + ".class")) {
+            MiscReflection.defineClass(ClassLoader.getSystemClassLoader(), Installer.class.getName(), MakeSure.notNull(is).readAllBytes(), Installer.class.getProtectionDomain());
+        } catch (Throwable ignored) {}
+
+
+        AtomicReference<Throwable> t = new AtomicReference<>();
+        ModuleLayer.boot().findModule("java.instrument").map(module -> {
+            try {
+                Class<?> cls = Class.forName("sun.instrument.InstrumentationImpl");
+                MethodHandles.Lookup lookup = MiscReflection.lookupIn(cls);
+                lookup.findStatic(cls, "loadAgent", MethodType.methodType(void.class, String.class))
+                        .invokeWithArguments(self.toString());
+            } catch (Throwable e) {
+                Throwable throwable = e;
+                if (throwable instanceof InvocationTargetException) throwable = throwable.getCause();
+                t.set(throwable);
+            }
+            return self;
+        }).orElseThrow(() -> new IllegalStateException("'java.instrument' module is not available!"));
+        if (t.get() != null) throw t.get();
+
+        return ByteBuddyAgent.getInstrumentation();
     }
 }

@@ -29,6 +29,10 @@ public class UnsafeAccess {
         return UnsafeInternals.getReference(field, o);
     }
 
+    public static <T> T allocateInstance(Class<T> cls) throws InstantiationException {
+        return UnsafeInternals.allocateInstance(cls);
+    }
+
     /**
      * free {@link Unsafe} for everyone!
      */

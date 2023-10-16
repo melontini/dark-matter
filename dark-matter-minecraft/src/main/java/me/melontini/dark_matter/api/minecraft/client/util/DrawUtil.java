@@ -29,10 +29,16 @@ import java.util.Optional;
 @SuppressWarnings("unused")
 @Environment(EnvType.CLIENT)
 public class DrawUtil {
-    public static final Screen FAKE_SCREEN = DrawInternals.FAKE_SCREEN;
+
+    @Deprecated
+    public static final Screen FAKE_SCREEN = getFakeScreen();
 
     private DrawUtil() {
         throw new UnsupportedOperationException();
+    }
+
+    public static Screen getFakeScreen() {
+        return DrawInternals.getFakeScreen();
     }
 
     public static void renderTooltip(DrawContext context, ItemStack stack, float x, float y) {

@@ -3,6 +3,7 @@ package me.melontini.dark_matter.impl.base.reflect;
 import me.melontini.dark_matter.api.base.reflect.Reflect;
 import me.melontini.dark_matter.api.base.reflect.UnsafeAccess;
 import me.melontini.dark_matter.api.base.util.MakeSure;
+import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import org.apache.commons.lang3.ClassUtils;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -109,34 +110,22 @@ public class ReflectionInternals {
         return f;
     }
 
-    private static VarHandle override;
+    private static final Lazy<VarHandle> override = Lazy.of(() -> () -> trustedLookup().findVarHandle(AccessibleObject.class, "override", boolean.class));
 
     public static <T extends AccessibleObject> T setAccessible(T member, boolean set) {
         MakeSure.notNull(member, "Tried to setAccessible a null constructor");
         try {
             member.setAccessible(set);
         } catch (Exception e) {
-            try {
-                if (override == null) {
-                    MethodHandles.Lookup lookup = stealTrustedLookup();
-                    override = lookup.findVarHandle(AccessibleObject.class, "override", boolean.class);
-                }
-                override.set(member, set);
-            } catch (NoSuchFieldException | IllegalAccessException ex) {
-                throw new RuntimeException(ex);
-            }
+            override.get().set(member, set);
         }
         return member;
     }
 
-    private static MethodHandles.Lookup trustedLookup;
+    private static final Lazy<MethodHandles.Lookup> trustedLookup = Lazy.of(() -> () -> (MethodHandles.Lookup) UnsafeAccess.getReference(MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP"), null));
 
-    public static MethodHandles.Lookup stealTrustedLookup() throws NoSuchFieldException {
-        if (trustedLookup == null) {
-            Field f = MethodHandles.Lookup.class.getDeclaredField("IMPL_LOOKUP");
-            trustedLookup = (MethodHandles.Lookup) UnsafeAccess.getReference(f, null);
-        }
-        return trustedLookup;
+    public static MethodHandles.Lookup trustedLookup() throws Exception {
+        return trustedLookup.getExc();
     }
 
     public static Field getField(Class<?> clazz, String name, boolean accessible) {
@@ -150,7 +139,7 @@ public class ReflectionInternals {
 
     public static Object getField(Field field, Object o) {
         try {
-            return stealTrustedLookup().unreflectGetter(field).invoke(o);
+            return trustedLookup().unreflectGetter(field).invoke(o);
         } catch (Throwable e) {
             return UnsafeAccess.getReference(field, o);
         }

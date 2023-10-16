@@ -1,10 +1,13 @@
 package me.melontini.dark_matter.impl.enums;
 
+import me.melontini.dark_matter.api.base.util.Mapper;
+import me.melontini.dark_matter.api.base.util.mixin.AsmUtil;
 import me.melontini.dark_matter.api.base.util.mixin.ExtendablePlugin;
 import me.melontini.dark_matter.api.base.util.mixin.IPluginPlugin;
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Label;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.tree.InsnList;
 import org.objectweb.asm.tree.MethodNode;
@@ -34,7 +37,7 @@ public class DarkMatterEnumsPlugin extends ExtendablePlugin {
     private void hackEnchantmentTarget(ClassNode targetClass) {
         //final String resolvedEnchantmentTarget = MAPPING_RESOLVER.mapClassName("intermediary", "net.minecraft.class_1886");
         final String resolvedItem = getMappingResolver().mapClassName("intermediary", "net.minecraft.class_1792");
-        final String resolvedIsAcceptableItem = getMappingResolver().mapMethodName("intermediary", "net.minecraft.class_1886", "method_8177", "(Lnet/minecraft/class_1792;)Z");
+        final String resolvedIsAcceptableItem = Mapper.mapMethod("net.minecraft.class_1886", "method_8177", "(Lnet/minecraft/class_1792;)Z");
 
         if (Modifier.isAbstract(targetClass.access)) {
             targetClass.access = targetClass.access & ~Opcodes.ACC_ABSTRACT;
@@ -44,23 +47,13 @@ public class DarkMatterEnumsPlugin extends ExtendablePlugin {
             if (method.name.equals(resolvedIsAcceptableItem)) {
                 if (Modifier.isAbstract(method.access)) {
                     method.access = method.access & ~Opcodes.ACC_ABSTRACT;
-
-                    if (method.instructions == null) method.instructions = new InsnList();
-                    method.instructions.clear();
-
-                    Label l0 = new Label();
-                    Label l1 = new Label();
-
-                    method.visitLabel(l0);
-                    method.visitInsn(Opcodes.ICONST_0);
-                    method.visitInsn(Opcodes.IRETURN);
-
-                    method.visitLabel(l1);
-                    method.visitLocalVariable("this", "L" + targetClass.name.replace(".", "/") + ";", null, l0, l1, 0);
-                    method.visitLocalVariable(getMappingResolver().getCurrentRuntimeNamespace().equals("intermediary") ? "$$0" : "item", "L" + resolvedItem.replace(".", "/") + ";", null, l0, l1, 1);
-                    method.visitMaxs(2, 2);
-                    method.visitEnd();
-
+                    method.instructions = new InsnList();
+                    AsmUtil.insAdapter(method, ia -> {
+                        ia.iconst(0);
+                        ia.areturn(Type.BOOLEAN_TYPE);
+                        ia.visitLocalVariable("this", "L" + targetClass.name + ";", null, new Label(), new Label(), 0);
+                        ia.visitMaxs(2, 2);
+                    });
                     break;
                 }
             }

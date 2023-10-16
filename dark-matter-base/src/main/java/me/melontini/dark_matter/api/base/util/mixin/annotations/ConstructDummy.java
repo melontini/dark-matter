@@ -34,4 +34,9 @@ public @interface ConstructDummy {
 
     int access() default Opcodes.ACC_PUBLIC;
 
+    @ApiStatus.NonExtendable
+    String mixin() default "";
+    @ApiStatus.NonExtendable
+    int priority() default 0;
+
 }

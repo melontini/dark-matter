@@ -3,6 +3,7 @@ package me.melontini.dark_matter.impl.recipe_book;
 import com.mojang.datafixers.util.Pair;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.Utilities;
+import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import me.melontini.dark_matter.api.enums.EnumWrapper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -33,21 +34,21 @@ public final class RecipeBookInternals {
     private static final Map<RecipeBookCategory, List<RecipeBookGroup>> GROUPS_FOR_CATEGORY = new HashMap<>();
 
     @Environment(EnvType.CLIENT)
-    private static final Map<RecipeBookCategory, Supplier<List<RecipeBookGroup>>> VANILLA_CATEGORIES = Utilities.consume(new HashMap<>(), map -> {
+    private static final Lazy<Map<RecipeBookCategory, Supplier<List<RecipeBookGroup>>>> VANILLA_CATEGORIES = Lazy.of(() -> () -> Utilities.consume(new HashMap<>(), map -> {
         map.put(RecipeBookCategory.CRAFTING, () -> RecipeBookGroup.CRAFTING);
         map.put(RecipeBookCategory.FURNACE, () -> RecipeBookGroup.FURNACE);
         map.put(RecipeBookCategory.BLAST_FURNACE, () -> RecipeBookGroup.BLAST_FURNACE);
         map.put(RecipeBookCategory.SMOKER, () -> RecipeBookGroup.SMOKER);
-    });
+    }));
 
     @Environment(EnvType.CLIENT)
     private static boolean isVanillaCategory(RecipeBookCategory category) {
-        return VANILLA_CATEGORIES.containsKey(category);
+        return VANILLA_CATEGORIES.get().containsKey(category);
     }
 
     @Environment(EnvType.CLIENT)
     private static List<RecipeBookGroup> getGroupsForCategory(RecipeBookCategory category) {
-        return VANILLA_CATEGORIES.get(category).get();
+        return VANILLA_CATEGORIES.get().get(category).get();
     }
 
     @Environment(EnvType.CLIENT)

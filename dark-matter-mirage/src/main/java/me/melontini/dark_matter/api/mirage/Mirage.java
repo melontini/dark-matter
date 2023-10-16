@@ -11,7 +11,16 @@ public class Mirage {
         throw new UnsupportedOperationException();
     }
 
-    public static final ClientWorld FAKE_WORLD = FakeWorld.INSTANCE;
+    @Deprecated
+    public static final ClientWorld FAKE_WORLD = FakeWorld.INSTANCE.get();
+    @Deprecated
     public static final LightmapTextureManager ALWAYS_BRIGHT_LTM = AlwaysBrightLightmapTextureManager.INSTANCE;
 
+    public static ClientWorld getFakeWorld() {
+        return FakeWorld.INSTANCE.get();
+    }
+
+    public static LightmapTextureManager getAlwaysBrightLTM() {
+        return AlwaysBrightLightmapTextureManager.INSTANCE;
+    }
 }

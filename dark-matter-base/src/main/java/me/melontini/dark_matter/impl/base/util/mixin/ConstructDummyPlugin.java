@@ -1,11 +1,10 @@
 package me.melontini.dark_matter.impl.base.util.mixin;
 
+import me.melontini.dark_matter.api.base.util.Mapper;
 import me.melontini.dark_matter.api.base.util.mixin.AsmUtil;
 import me.melontini.dark_matter.api.base.util.mixin.IPluginPlugin;
 import me.melontini.dark_matter.api.base.util.mixin.annotations.ConstructDummy;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
-import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.Label;
@@ -44,10 +43,8 @@ public class ConstructDummyPlugin implements IPluginPlugin {
 
             Type descType = Type.getType(desc);
 
-            MappingResolver resolver = FabricLoader.getInstance().getMappingResolver();
-
-            String mappedName = resolver.mapMethodName("intermediary", owner, name, desc);
-            String mappedDesc = AsmUtil.mapStringFromDescriptor(descType, resolver);
+            String mappedName = Mapper.mapMethod(owner, name, desc);
+            String mappedDesc = Mapper.mapMethodDescriptor(descType);
             Type mappedDescType = Type.getType(mappedDesc);
 
             for (MethodNode methodNode : targetClass.methods) {
@@ -57,26 +54,17 @@ public class ConstructDummyPlugin implements IPluginPlugin {
                 }
             }
 
-            MethodNode methodNode = new MethodNode(Opcodes.ASM9, access, mappedName, mappedDesc, null, null);
-
-            methodNode.visitVarInsn(Opcodes.ALOAD, 0);
-            Type[] args = mappedDescType.getArgumentTypes();
-            for (int i = 0; i < args.length; i++) {
-                methodNode.visitVarInsn(args[i].getOpcode(Opcodes.ILOAD), i + 1);
-            }
-            methodNode.visitMethodInsn(Opcodes.INVOKESPECIAL, targetClass.superName.replace(".", "/"), mappedName, mappedDesc, false);
-            methodNode.visitInsn(mappedDescType.getReturnType().getOpcode(Opcodes.IRETURN));;
-
-            Label l0 = new Label();
-            Label l1 = new Label();
-            //Stacks and labels get recalculated, so who cares.
-            methodNode.visitLocalVariable("this", "L" + targetClass.name.replace(".", "/") + ";", null, l0, l1, 0);
-            for (int i = 0; i < args.length; i++) {
-                methodNode.visitLocalVariable("arg" + i, args[i].getDescriptor(), null, l0, l1, i + 1);
-            }
-            methodNode.visitMaxs(0, args.length + 1);
-
-            targetClass.methods.add(methodNode);
+            AsmUtil.insAdapter(targetClass, access, mappedName, mappedDesc, ia -> {
+                ia.load(0, Type.getType(Object.class));
+                Type[] args = mappedDescType.getArgumentTypes();
+                for (int i = 0; i < args.length; i++) {
+                    ia.load(i + 1, args[i]);
+                }
+                ia.invokespecial(targetClass.superName.replace(".", "/"), mappedName, mappedDesc, false);
+                ia.areturn(mappedDescType.getReturnType());
+                ia.visitLocalVariable("this", "L" + targetClass.name + ";", null, new Label(), new Label(), 0);
+                ia.visitMaxs(args.length + 1, args.length + 1);
+            });
             DarkMatterLog.debug("Successfully created and added a dummy method {}.{}{}", targetClass.name, mappedName, mappedDesc);
         }
     }

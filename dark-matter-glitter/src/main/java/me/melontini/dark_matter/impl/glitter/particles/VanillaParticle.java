@@ -77,7 +77,7 @@ public class VanillaParticle extends AbstractScreenParticle {
         matrixStack.multiplyPositionMatrix(matrices.peek().getPositionMatrix());
         RenderSystem.applyModelViewMatrix();
 
-        Mirage.ALWAYS_BRIGHT_LTM.enable();
+        Mirage.getAlwaysBrightLTM().enable();
         Tessellator tessellator = Tessellator.getInstance();
         BufferBuilder bufferBuilder = tessellator.getBuffer();
 
@@ -97,7 +97,7 @@ public class VanillaParticle extends AbstractScreenParticle {
 
         particle.getType().draw(tessellator);
 
-        Mirage.ALWAYS_BRIGHT_LTM.disable();
+        Mirage.getAlwaysBrightLTM().disable();
         matrixStack.pop();
         RenderSystem.applyModelViewMatrix();
         matrices.pop();
@@ -115,7 +115,7 @@ public class VanillaParticle extends AbstractScreenParticle {
     public static <T extends ParticleEffect> Particle createScreenParticle(T parameters, double x, double y, double velocityX, double velocityY, double velocityZ) {
         Particle particle;
         try {
-            WORLD.set(Mirage.FAKE_WORLD);
+            WORLD.set(Mirage.getFakeWorld());
             particle = ((ParticleManagerAccessor)MinecraftClient.getInstance().particleManager).dark_matter$createParticle(parameters, x / 24, (MinecraftClient.getInstance().getWindow().getScaledHeight() - y) / 24, 0, velocityX, velocityY, velocityZ);
         } finally {
             WORLD.remove();

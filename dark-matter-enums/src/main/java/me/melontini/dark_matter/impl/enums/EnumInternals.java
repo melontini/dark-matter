@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.enums;
 
+import me.melontini.dark_matter.api.base.reflect.MiscReflection;
 import me.melontini.dark_matter.api.base.reflect.Reflect;
 import me.melontini.dark_matter.api.base.reflect.UnsafeAccess;
 import me.melontini.dark_matter.api.base.util.MakeSure;
@@ -16,6 +17,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
+import static me.melontini.dark_matter.api.base.util.Utilities.runUnchecked;
 
 @ApiStatus.Internal
 public class EnumInternals {
@@ -71,14 +73,14 @@ public class EnumInternals {
     public static synchronized void clearEnumCache(Class<? extends Enum<?>> cls) {
         try {
             Reflect.findField(Class.class, "enumConstants").ifPresent(field ->
-                    UnsafeAccess.putReference(field, cls, null));
+                    runUnchecked(() -> MiscReflection.unreflectVarHandle(field).set(cls, null)));
         } catch (Exception e) {
             DarkMatterLog.error("Couldn't clear enumConstants. This shouldn't really happen", e);
         }
 
         try {
             Reflect.findField(Class.class, "enumConstantDirectory").ifPresent(field ->
-                    UnsafeAccess.putReference(field, cls, null));
+                    runUnchecked(() -> MiscReflection.unreflectVarHandle(field).set(cls, null)));
         } catch (Exception e) {
             DarkMatterLog.error("Couldn't clear enumConstantDirectory. This shouldn't really happen", e);
         }

@@ -9,7 +9,6 @@
   "client": [
     "ClientRecipeBookMixin",
     "RecipeBookGroupMixin",
-    "compat.MouseWheelieCompatMixin",
     "make_mutable.RecipeBookGroupMixin",
     "pages.RecipeBookWidgetMixin",
     "pages.RecipeGroupButtonMixin"

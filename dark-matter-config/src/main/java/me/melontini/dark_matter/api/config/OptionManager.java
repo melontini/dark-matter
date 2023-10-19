@@ -7,6 +7,7 @@ import net.fabricmc.loader.api.ModContainer;
 import org.jetbrains.annotations.ApiStatus;
 
 import java.lang.reflect.Field;
+import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
@@ -19,11 +20,11 @@ public interface OptionManager<T> {
 
     void processOptions();
 
-    Set<String> getAllProcessors();
-    Optional<Processor<T>> getProcessor(String id);
+    Collection<ProcessorEntry<T>> getAllProcessors();
+    Optional<ProcessorEntry<T>> getProcessor(String id);
 
-    Tuple<String, Set<String>> blameProcessors(Field f);
-    Set<String> blameProcessors(String option) throws NoSuchFieldException;
+    Tuple<String, Set<ProcessorEntry<T>>> blameProcessors(Field f);
+    Set<ProcessorEntry<T>> blameProcessors(String option) throws NoSuchFieldException;
 
     Tuple<String, Set<ModContainer>> blameModJson(Field f);
     Set<ModContainer> blameModJson(String option) throws NoSuchFieldException;
@@ -31,4 +32,8 @@ public interface OptionManager<T> {
     Optional<TextEntry> getReason(String processor, String option);
 
     ConfigManager<T> getConfigManager();
+
+    record ProcessorEntry<T>(String id, Processor<T> processor, ModContainer mod) {
+
+    }
 }

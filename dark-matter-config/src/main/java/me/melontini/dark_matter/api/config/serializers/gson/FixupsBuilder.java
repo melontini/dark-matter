@@ -1,6 +1,6 @@
 package me.melontini.dark_matter.api.config.serializers.gson;
 
-import me.melontini.dark_matter.impl.config.FixupsImpl;
+import me.melontini.dark_matter.impl.config.serializers.gson.FixupsImpl;
 import org.jetbrains.annotations.ApiStatus;
 
 @ApiStatus.NonExtendable
@@ -8,7 +8,7 @@ import org.jetbrains.annotations.ApiStatus;
 public interface FixupsBuilder {
 
     static FixupsBuilder create() {
-        return new FixupsImpl();
+        return new FixupsImpl().builder();
     }
 
     FixupsBuilder add(String key, Fixup fixup);

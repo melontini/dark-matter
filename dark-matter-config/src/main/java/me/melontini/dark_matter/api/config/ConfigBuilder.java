@@ -7,6 +7,7 @@ import me.melontini.dark_matter.impl.config.ConfigBuilderImpl;
 import net.fabricmc.loader.api.ModContainer;
 import org.jetbrains.annotations.ApiStatus;
 
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -62,7 +63,7 @@ public interface ConfigBuilder<T> {
      * <p>
      * The entrypoint for this is {@code {modid}:config/{config}/processors}
      */
-    ConfigBuilder<T> processors(Consumer<OptionProcessorRegistry<T>> consumer);
+    ConfigBuilder<T> processors(BiConsumer<OptionProcessorRegistry<T>, ModContainer> consumer);
 
     ConfigBuilder<T> scanner(ConfigClassScanner scanner);
 

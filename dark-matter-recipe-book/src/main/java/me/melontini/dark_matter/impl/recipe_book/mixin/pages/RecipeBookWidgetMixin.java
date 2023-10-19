@@ -14,6 +14,7 @@ import net.minecraft.client.gui.DrawContext;
 import net.minecraft.client.gui.screen.recipebook.RecipeBookWidget;
 import net.minecraft.client.gui.screen.recipebook.RecipeGroupButtonWidget;
 import net.minecraft.client.recipebook.RecipeBookGroup;
+import org.jetbrains.annotations.Nullable;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -37,6 +38,8 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
     @Shadow public abstract boolean isOpen();
     @Shadow @Final public static int field_32408;
     @Shadow @Final public static int field_32409;
+
+    @Shadow @Nullable private RecipeGroupButtonWidget currentTab;
     @Unique
     private int dm$page = 0;
     @Unique
@@ -69,6 +72,15 @@ public abstract class RecipeBookWidgetMixin implements PaginatedRecipeBookWidget
             } else if (this.dm$prevPageButton.mouseClicked(mouseX, mouseY, button)) {
                 this.dm$decrementPage();
                 cir.setReturnValue(true);
+            }
+        }
+    }
+
+    @Inject(at = @At("TAIL"), method = "refreshResults")
+    private void dark_matter$refreshResults(boolean resetCurrentPage, CallbackInfo ci) {
+        if (resetCurrentPage && this.currentTab != null) {
+            if (this.dm$getPage() != this.currentTab.dm$getPage()) {
+                this.dm$setPage(Math.max(this.currentTab.dm$getPage(), 0));
             }
         }
     }

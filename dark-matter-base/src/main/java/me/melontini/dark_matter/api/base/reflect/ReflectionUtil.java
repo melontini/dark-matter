@@ -77,9 +77,6 @@ public class ReflectionUtil {
         return Reflect.setAccessible(field, true);
     }
 
-    /**
-     * See dark-matter-danger
-     */
     @Deprecated(forRemoval = true)
     public static void addOpensOrExports(Module module, String pn, Module other, boolean open, boolean syncVM) {
         try {

@@ -38,24 +38,32 @@ public class UnsafeInternals {
     });
 
     public static void setReference(Field field, Object o, Object value) {
-        o = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldBase(field) : o;
-        long l = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field);
+        boolean isStatic = Modifier.isStatic(field.getModifiers());
         boolean isVolatile = Modifier.isVolatile(field.getModifiers()) || Modifier.isFinal(field.getModifiers());
         if (isVolatile) {
-            getUnsafe().putObjectVolatile(o, l, value);
+            getUnsafe().putObjectVolatile(
+                    isStatic ? getUnsafe().staticFieldBase(field) : o,
+                    isStatic ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field),
+                    value);
         } else {
-            getUnsafe().putObject(o, l, value);
+            getUnsafe().putObject(
+                    isStatic ? getUnsafe().staticFieldBase(field) : o,
+                    isStatic ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field),
+                    value);
         }
     }
 
-    public static Object getReference(Field field, Object o) {
-        o = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldBase(field) : o;
-        long l = Modifier.isStatic(field.getModifiers()) ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field);
+    public static <T> T getReference(Field field, Object o) {
+        boolean isStatic = Modifier.isStatic(field.getModifiers());
         boolean isVolatile = Modifier.isVolatile(field.getModifiers()) || Modifier.isFinal(field.getModifiers());
         if (isVolatile) {
-            return getUnsafe().getObjectVolatile(o, l);
+            return Utilities.cast(getUnsafe().getObjectVolatile(
+                    isStatic ? getUnsafe().staticFieldBase(field) : o,
+                    isStatic ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field)));
         } else {
-            return getUnsafe().getObject(o, l);
+            return Utilities.cast(getUnsafe().getObject(
+                    isStatic ? getUnsafe().staticFieldBase(field) : o,
+                    isStatic ? getUnsafe().staticFieldOffset(field) : getUnsafe().objectFieldOffset(field)));
         }
     }
 

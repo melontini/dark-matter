@@ -22,8 +22,8 @@ public interface Analytics {
         return new AnalyticsImpl(mod, true);
     }
 
-    static Analytics get(ModContainer mod, boolean init) {
-        return new AnalyticsImpl(mod, init);
+    static Analytics get(ModContainer mod, boolean loadID) {
+        return new AnalyticsImpl(mod, loadID);
     }
 
     /**

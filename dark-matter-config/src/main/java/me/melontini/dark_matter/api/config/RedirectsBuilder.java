@@ -9,7 +9,7 @@ import org.jetbrains.annotations.ApiStatus;
 public interface RedirectsBuilder {
 
     static RedirectsBuilder create() {
-        return new RedirectsImpl();
+        return new RedirectsImpl().builder();
     }
 
     RedirectsBuilder add(String from, String to);

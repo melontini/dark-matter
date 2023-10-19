@@ -1,4 +1,4 @@
-package me.melontini.dark_matter.impl.config;
+package me.melontini.dark_matter.impl.config.serializers.gson;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -43,19 +43,19 @@ public class GsonSerializer<T> implements ConfigSerializer<T> {
             try (var reader = Files.newBufferedReader(this.getPath())) {
                 JsonObject object = this.fixupFunc.apply(JsonParser.parseReader(reader).getAsJsonObject());
 
-                return this.gson.fromJson(object, this.manager.getType());
+                return this.gson.fromJson(object, this.getConfigManager().getType());
             } catch (IOException e) {
                 DarkMatterLog.error("Failed to load {}, using defaults", this.getPath());
             }
         }
-        return this.manager.createDefault();
+        return this.getConfigManager().createDefault();
     }
 
     @Override
     public void save() {
         try {
             Files.createDirectories(this.getPath().getParent());
-            Files.write(this.getPath(), this.gson.toJson(this.manager.getConfig()).getBytes());
+            Files.write(this.getPath(), this.gson.toJson(this.getConfigManager().getConfig()).getBytes());
         } catch (Exception e) {
             DarkMatterLog.error("Failed to save {}", this.getPath(), e);
         }

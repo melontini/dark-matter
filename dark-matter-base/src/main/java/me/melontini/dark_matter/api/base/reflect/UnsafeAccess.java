@@ -15,7 +15,7 @@ public class UnsafeAccess {
         UnsafeInternals.setReference(field, o, value);
     }
 
-    public static Object getReference(Field field, Object o) {
+    public static <T> T getReference(Field field, Object o) {
         return UnsafeInternals.getReference(field, o);
     }
 

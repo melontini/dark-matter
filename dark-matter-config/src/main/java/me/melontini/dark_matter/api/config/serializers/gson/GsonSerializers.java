@@ -3,7 +3,7 @@ package me.melontini.dark_matter.api.config.serializers.gson;
 import com.google.gson.Gson;
 import me.melontini.dark_matter.api.config.ConfigManager;
 import me.melontini.dark_matter.api.config.serializers.ConfigSerializer;
-import me.melontini.dark_matter.impl.config.GsonSerializer;
+import me.melontini.dark_matter.impl.config.serializers.gson.GsonSerializer;
 
 public class GsonSerializers {
 

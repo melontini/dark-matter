@@ -14,6 +14,7 @@ import net.fabricmc.loader.api.ModContainer;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -29,7 +30,7 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
 
     private Function<ConfigManager<T>, ConfigSerializer<T>> serializer;
     private Supplier<T> ctx;
-    private Consumer<OptionProcessorRegistry<T>> registrar;
+    private BiConsumer<OptionProcessorRegistry<T>, ModContainer> registrar;
     private ConfigClassScanner scanner;
     private Function<TextEntry.InfoHolder<T>, TextEntry> reasonFactory;
 
@@ -75,7 +76,7 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
     }
 
     @Override
-    public ConfigBuilderImpl<T> processors(Consumer<OptionProcessorRegistry<T>> consumer) {
+    public ConfigBuilderImpl<T> processors(BiConsumer<OptionProcessorRegistry<T>, ModContainer> consumer) {
         this.registrar = consumer;
         return this;
     }

@@ -17,8 +17,8 @@ public class AnalyticsImpl implements Analytics {
 
     private final UUID uuid;
 
-    public AnalyticsImpl(ModContainer mod, boolean init) {
-        this.uuid = init ? this.init(mod) : nullID;
+    public AnalyticsImpl(ModContainer mod, boolean loadID) {
+        this.uuid = loadID ? this.init(mod) : nullID;
     }
 
     private UUID init(ModContainer mod) {

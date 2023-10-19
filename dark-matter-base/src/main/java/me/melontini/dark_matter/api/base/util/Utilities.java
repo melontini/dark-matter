@@ -31,12 +31,12 @@ public final class Utilities {
 
     public static <T> T pickAtRandom(@NotNull T[] list) {
         MakeSure.notEmpty(list);
-        return list[RANDOM.nextInt(list.length)];
+        return list[MathStuff.threadRandom().nextInt(list.length)];
     }
 
     public static <T> T pickAtRandom(@NotNull List<T> list) {
         MakeSure.notEmpty(list);
-        return list.get(RANDOM.nextInt(list.size()));
+        return list.get(MathStuff.threadRandom().nextInt(list.size()));
     }
 
     public static BooleanSupplier getTruth() {

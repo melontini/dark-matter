@@ -12,7 +12,6 @@ import org.spongepowered.asm.mixin.extensibility.IMixinInfo;
 import org.spongepowered.asm.util.Annotations;
 
 import java.lang.reflect.Modifier;
-import java.util.concurrent.atomic.AtomicInteger;
 
 @ApiStatus.Internal
 public class PublicizePlugin implements IPluginPlugin {
@@ -37,31 +36,20 @@ public class PublicizePlugin implements IPluginPlugin {
     }
 
     private static void publicize(MethodNode methodNode) {
-        AtomicInteger integer = new AtomicInteger(methodNode.access);
-        if (publicize(integer).get() != methodNode.access) {
+        if (Modifier.isPrivate(methodNode.access) || Modifier.isProtected(methodNode.access)) {
             DarkMatterLog.debug("Publicized method: " + methodNode.name + methodNode.desc);
-            methodNode.access = integer.get();
+            methodNode.access = publicize(methodNode.access);
         }
     }
 
     private static void publicize(FieldNode fieldNode) {
-        AtomicInteger integer = new AtomicInteger(fieldNode.access);
-        if (publicize(integer).get() != fieldNode.access) {
+        if (Modifier.isPrivate(fieldNode.access) || Modifier.isProtected(fieldNode.access)) {
             DarkMatterLog.debug("Publicized field: " + fieldNode.name + fieldNode.desc);
-            fieldNode.access = integer.get();
+            fieldNode.access = publicize(fieldNode.access);
         }
     }
 
-    private static AtomicInteger publicize(AtomicInteger access) {
-        if (Modifier.isPrivate(access.get())) {
-            access.set((access.get() & ~Opcodes.ACC_PRIVATE) | Opcodes.ACC_PUBLIC);
-        }
-
-        if (Modifier.isProtected(access.get())) {
-            access.set((access.get() & ~Opcodes.ACC_PROTECTED) | Opcodes.ACC_PUBLIC);
-        }
-
-        return access;
+    private static int publicize(int access) {
+        return (access & ~(Opcodes.ACC_PRIVATE | Opcodes.ACC_PROTECTED)) | Opcodes.ACC_PUBLIC;
     }
-
 }

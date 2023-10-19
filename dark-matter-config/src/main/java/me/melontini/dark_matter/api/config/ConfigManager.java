@@ -12,7 +12,6 @@ import java.util.List;
 public interface ConfigManager<T> {
 
     T getConfig();
-    Reference<T> getConfigRef();
     T getDefaultConfig();
     T createDefault();
 
@@ -38,8 +37,4 @@ public interface ConfigManager<T> {
 
     void load();
     void save();
-
-    interface Reference<T> {
-        T get();
-    }
 }

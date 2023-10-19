@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.analytics;
 
 import me.melontini.dark_matter.api.base.util.MakeSure;
+import org.jetbrains.annotations.ApiStatus;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -36,6 +37,7 @@ public abstract class MessageHandler<T> {
         if (analytics.enabled() || analytics.handleCrashes()) sendInternal(consumer, false, false);
     }
 
+    @ApiStatus.OverrideOnly
     protected abstract void sendInternal(T consumer, boolean wait, boolean errors);
 
     public String getPropName(Prop prop) {

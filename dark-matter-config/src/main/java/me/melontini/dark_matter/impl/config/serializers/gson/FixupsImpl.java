@@ -1,4 +1,4 @@
-package me.melontini.dark_matter.impl.config;
+package me.melontini.dark_matter.impl.config.serializers.gson;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -13,9 +13,24 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-public class FixupsImpl implements Fixups, FixupsBuilder {
+public class FixupsImpl implements Fixups {
 
     private final Map<String[], Set<Fixup>> fixups = new HashMap<>();
+
+    public FixupsBuilder builder() {
+        return new FixupsBuilder() {
+            @Override
+            public FixupsBuilder add(String key, Fixup fixup) {
+                FixupsImpl.this.fixups.computeIfAbsent(key.split("\\."), k -> new HashSet<>()).add(fixup);
+                return this;
+            }
+
+            @Override
+            public Fixups build() {
+                return FixupsImpl.this;
+            }
+        };
+    }
 
     @Override
     public JsonObject fixup(JsonObject config) {
@@ -36,16 +51,5 @@ public class FixupsImpl implements Fixups, FixupsBuilder {
             });
         }
         return config;
-    }
-
-    @Override
-    public FixupsBuilder add(String key, Fixup fixup) {
-        fixups.computeIfAbsent(key.split("\\."), k -> new HashSet<>()).add(fixup);
-        return this;
-    }
-
-    @Override
-    public Fixups build() {
-        return this;
     }
 }

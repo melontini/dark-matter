@@ -16,6 +16,7 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -51,10 +52,10 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         this.mod = mod;
     }
 
-    ConfigManagerImpl<T> setupOptionManager(@Nullable Consumer<OptionProcessorRegistry<T>> registrar, Function<TextEntry.InfoHolder<T>, TextEntry> defaultReason) {
+    ConfigManagerImpl<T> setupOptionManager(@Nullable BiConsumer<OptionProcessorRegistry<T>, ModContainer> registrar, Function<TextEntry.InfoHolder<T>, TextEntry> defaultReason) {
         this.optionManager = new OptionManagerImpl<>(this, defaultReason);
-        if (registrar != null) registrar.accept(this.optionManager);
-        EntrypointRunner.runEntrypoint(getShareId("processors"), Consumer.class, consumer -> Utilities.consume(this.optionManager, cast(consumer)));
+        if (registrar != null) registrar.accept(this.optionManager, this.getMod());
+        EntrypointRunner.runWithContext(getShareId("processors"), BiConsumer.class, (consumer, mod) -> Utilities.consume(this.optionManager, mod, cast(consumer)));
         return this;
     }
 
@@ -85,7 +86,7 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         this.serializer = serializer.apply(this);
 
         this.load();
-        this.defaultConfig = Lazy.of(() -> () -> this.ctx.get());
+        this.defaultConfig = Lazy.of(() -> this::createDefault);
         return this;
     }
 
@@ -112,22 +113,17 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
 
     @Override
     public void load() {
-        this.config.set(this.serializer.load());
+        this.config.set(this.getSerializer().load());
         this.save();
     }
 
     private void startScan() {
-        iterate(this.configClass, "", new HashSet<>(Arrays.asList(this.configClass.getClasses())), new ArrayList<>());
+        iterate(this.getType(), "", new HashSet<>(Arrays.asList(this.getType().getClasses())), new ArrayList<>());
     }
 
     @Override
     public T getConfig() {
         return this.config.get();
-    }
-
-    @Override
-    public Reference<T> getConfigRef() {
-        return this.config;
     }
 
     @Override
@@ -153,7 +149,7 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     public List<Field> getFields(String option) throws NoSuchFieldException {
         List<Field> f = this.optionToFields.get(option = this.redirectFunc.apply(option));
         if (f == null) throw new NoSuchFieldException(option);
-        return f;
+        return Collections.unmodifiableList(f);
     }
 
     @Override
@@ -208,5 +204,23 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
 
     private String getShareId(String key) {
         return this.getMod().getMetadata().getId() + ":config/" + this.getName() + "/" + key;
+    }
+
+    static class ConfigRef<T> {
+
+        volatile T value;
+
+        public T get() {
+            return this.value;
+        }
+
+        void set(T value) {
+            this.value = value;
+        }
+
+        @Override
+        public String toString() {
+            return String.valueOf(this.value);
+        }
     }
 }

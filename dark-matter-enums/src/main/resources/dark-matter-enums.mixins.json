@@ -6,16 +6,12 @@
   "plugin": "me.melontini.dark_matter.impl.enums.DarkMatterEnumsPlugin",
   "mixins": [
     "compat.UnsafeExtensibleEnumMixin",
-    "enhanced_enums.AbstractMinecraftEntityTypeMixin",
-    "enhanced_enums.BoatEntityTypeMixin",
     "enhanced_enums.EnchantmentTargetMixin",
-    "enhanced_enums.FormattingMixin",
     "enhanced_enums.RaidMemberMixin",
-    "enhanced_enums.RarityMixin",
-    "enhanced_enums.RecipeBookCategoryMixin"
+    "enhanced_enums.auto.StaticEnums"
   ],
   "client": [
-    "enhanced_enums.RecipeBookGroupMixin"
+    "enhanced_enums.auto.ClientEnums"
   ],
   "injectors": {
     "defaultRequire": 1

@@ -27,7 +27,7 @@ public class EnumWrapper {
         public static AbstractMinecartEntity.Type extend(String internalName) {
             MakeSure.notEmpty(internalName, "Tried to extend AbstractMinecartEntity.Type with an empty internalName");
 
-            return (AbstractMinecartEntity.Type) AbstractMinecartEntity.Type.values()[0].dark_matter$extend(internalName);
+            return AbstractMinecartEntity.Type.values()[0].dark_matter$extend(internalName);
         }
     }
 
@@ -40,7 +40,7 @@ public class EnumWrapper {
             MakeSure.notNull(base, "Tried to extend BoatEntity.Type with a null block");
             MakeSure.notEmpty(name, "Tried to extend BoatEntity.Type with an empty name");
 
-            return (BoatEntity.Type) BoatEntity.Type.values()[0].dark_matter$extend(internalName, base, name);
+            return BoatEntity.Type.values()[0].dark_matter$extend(internalName, base, name);
         }
     }
 
@@ -52,7 +52,7 @@ public class EnumWrapper {
             MakeSure.notEmpty(internalName, "Tried to extend EnchantmentTarget with an empty internalName");
             MakeSure.notNull(predicate, "Tried to extend EnchantmentTarget with a null predicate");
 
-            return (net.minecraft.enchantment.EnchantmentTarget) net.minecraft.enchantment.EnchantmentTarget.values()[0].dark_matter$extend(internalName, predicate);
+            return net.minecraft.enchantment.EnchantmentTarget.values()[0].dark_matter$extend(internalName, predicate);
         }
     }
 
@@ -65,7 +65,7 @@ public class EnumWrapper {
             MakeSure.notNulls(code, modifier, colorIndex, "Tried to extend Formatting with a null argument");
             MakeSure.notEmpty(name, "Tried to extend Formatting with an empty name");
 
-            return (net.minecraft.util.Formatting) net.minecraft.util.Formatting.values()[0].dark_matter$extend(internalName, name, code, modifier, colorIndex, colorValue);
+            return net.minecraft.util.Formatting.values()[0].dark_matter$extend(internalName, name, code, modifier, colorIndex, colorValue);
         }
 
         public static net.minecraft.util.Formatting extend(String internalName, String name, Character code, Integer colorIndex, @Nullable Integer colorValue) {
@@ -73,7 +73,7 @@ public class EnumWrapper {
             MakeSure.notNulls(code, colorIndex, "Tried to extend Formatting with a null argument");
             MakeSure.notEmpty(name, "Tried to extend Formatting with an empty name");
 
-            return (net.minecraft.util.Formatting) net.minecraft.util.Formatting.values()[0].dark_matter$extend(internalName, name, code, colorIndex, colorValue);
+            return net.minecraft.util.Formatting.values()[0].dark_matter$extend(internalName, name, code, colorIndex, colorValue);
         }
 
         public static net.minecraft.util.Formatting extend(String internalName, String name, Character code, Boolean modifier) {
@@ -81,7 +81,7 @@ public class EnumWrapper {
             MakeSure.notNulls(code, modifier, "Tried to extend Formatting with a null argument");
             MakeSure.notEmpty(name, "Tried to extend Formatting with an empty name");
 
-            return (net.minecraft.util.Formatting) net.minecraft.util.Formatting.values()[0].dark_matter$extend(internalName, name, code, modifier);
+            return net.minecraft.util.Formatting.values()[0].dark_matter$extend(internalName, name, code, modifier);
         }
     }
 
@@ -93,7 +93,7 @@ public class EnumWrapper {
             MakeSure.notEmpty(internalName, "Tried to extend Rarity with an empty internalName");
             MakeSure.notNull(formatting, "Tried to extend Rarity with a null formatting");
 
-            return (net.minecraft.util.Rarity) net.minecraft.util.Rarity.values()[0].dark_matter$extend(internalName, formatting);
+            return net.minecraft.util.Rarity.values()[0].dark_matter$extend(internalName, formatting);
         }
     }
 
@@ -105,7 +105,7 @@ public class EnumWrapper {
         public static net.minecraft.client.recipebook.RecipeBookGroup extend(String internalName, ItemStack... stacks) {
             MakeSure.notEmpty(internalName, "Tried to extend RecipeBookGroup with an empty internalName");
 
-            return (net.minecraft.client.recipebook.RecipeBookGroup) net.minecraft.client.recipebook.RecipeBookGroup.values()[0].dark_matter$extend(internalName, (Object) stacks);
+            return net.minecraft.client.recipebook.RecipeBookGroup.values()[0].dark_matter$extend(internalName, (Object) stacks);
         }
     }
 
@@ -117,7 +117,7 @@ public class EnumWrapper {
             MakeSure.notEmpty(internalName, "Tried to extend Raid.Member with an empty internalName");
             MakeSure.isTrue(countInWave.length > 0, "Tried to extend Raid.Member with empty countInWave array");
 
-            return (Raid.Member) Raid.Member.values()[0].dark_matter$extend(internalName, type, countInWave);
+            return Raid.Member.values()[0].dark_matter$extend(internalName, type, countInWave);
         }
     }
 }

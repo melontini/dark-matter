@@ -1,8 +1,9 @@
 package me.melontini.dark_matter.api.enums.interfaces;
 
 import me.melontini.dark_matter.api.enums.EnumUtils;
+import org.jetbrains.annotations.ApiStatus;
 
-public interface ExtendableEnum<T extends Enum<?>> {
+public interface ExtendableEnum {
     /**
      * Extends an enum with a new element.
      *
@@ -17,11 +18,14 @@ public interface ExtendableEnum<T extends Enum<?>> {
      * @return the newly created enum element
      * @throws IllegalStateException if the `extend` method is not implemented by the enum class
      */
-    default T dark_matter$extend(String internalName, Object... params) {
+    default <T extends Enum<?>> T dark_matter$extend(String internalName, Object... params) {
         try {
             return (T) EnumUtils.callEnumInvoker(((T) this).getDeclaringClass(), internalName, params);
         } catch (Throwable e) {
             throw new RuntimeException(e);
         }
     }
+
+    @ApiStatus.Internal
+    default void dark_matter$init(Object... args) {}
 }

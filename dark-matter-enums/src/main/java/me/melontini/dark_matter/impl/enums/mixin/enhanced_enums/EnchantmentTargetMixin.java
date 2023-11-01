@@ -1,10 +1,12 @@
 package me.melontini.dark_matter.impl.enums.mixin.enhanced_enums;
 
+import me.melontini.dark_matter.api.base.util.mixin.annotations.AsmTransformers;
 import me.melontini.dark_matter.api.base.util.mixin.annotations.Publicize;
 import me.melontini.dark_matter.api.enums.EnumUtils;
 import me.melontini.dark_matter.api.enums.interfaces.ExtendableEnum;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import me.melontini.dark_matter.impl.enums.interfaces.EnchantmentTargetHack;
+import me.melontini.dark_matter.impl.enums.transformers.EnchantmentTargetTransformer;
 import net.minecraft.enchantment.EnchantmentTarget;
 import net.minecraft.item.Item;
 import org.apache.commons.lang3.ArrayUtils;
@@ -16,8 +18,10 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.function.Predicate;
 
+@Pseudo
+@AsmTransformers(EnchantmentTargetTransformer.class)
 @Mixin(value = EnchantmentTarget.class, priority = 1001)
-public class EnchantmentTargetMixin implements ExtendableEnum<EnchantmentTarget>, EnchantmentTargetHack {
+public class EnchantmentTargetMixin implements ExtendableEnum, EnchantmentTargetHack {
     @Shadow
     @Final
     @Mutable
@@ -58,8 +62,9 @@ public class EnchantmentTargetMixin implements ExtendableEnum<EnchantmentTarget>
         this.dark_matter$predicate = predicate;
     }
 
+
     @Override
-    public EnchantmentTarget dark_matter$extend(String internalName, Object... params) {
-        return dark_matter$extendEnum(internalName, (Predicate<Item>) params[0]);
+    public <T extends Enum<?>> T dark_matter$extend(String internalName, Object... params) {
+        return (T) dark_matter$extendEnum(internalName, (Predicate<Item>) params[0]);
     }
 }

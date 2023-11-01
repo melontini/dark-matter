@@ -1,9 +1,6 @@
 package me.melontini.dark_matter.api.base.util.mixin;
 
-import me.melontini.dark_matter.impl.base.util.mixin.ConstructDummyPlugin;
-import me.melontini.dark_matter.impl.base.util.mixin.MixinPredicatePlugin;
-import me.melontini.dark_matter.impl.base.util.mixin.PublicizePlugin;
-import me.melontini.dark_matter.impl.base.util.mixin.ShouldApplyPlugin;
+import me.melontini.dark_matter.impl.base.util.mixin.*;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
@@ -23,13 +20,18 @@ import java.util.concurrent.atomic.AtomicBoolean;
 @ApiStatus.Experimental
 public class ExtendablePlugin implements IMixinConfigPlugin {
 
-    private final Set<IPluginPlugin> plugins = new HashSet<>();
+    private final Set<IPluginPlugin> plugins;
+
+    public ExtendablePlugin() {
+        Set<IPluginPlugin> plugins = new HashSet<>();
+        plugins.add(DefaultPlugins.mixinPredicatePlugin());
+        this.collectPlugins(plugins);
+
+        this.plugins = Collections.unmodifiableSet(plugins);
+    }
 
     @Override
     public final void onLoad(String mixinPackage) {
-        this.plugins.add(DefaultPlugins.mixinPredicatePlugin());
-        this.collectPlugins(this.plugins);
-
         this.plugins.forEach(plugin -> plugin.onPluginLoad(mixinPackage));
         this.onPluginLoad(mixinPackage);
     }
@@ -171,6 +173,10 @@ public class ExtendablePlugin implements IMixinConfigPlugin {
 
         public static IPluginPlugin publicizePlugin() {
             return new PublicizePlugin();
+        }
+
+        public static IPluginPlugin asmTransformerPlugin() {
+            return new AsmTransformerPlugin();
         }
 
         /**

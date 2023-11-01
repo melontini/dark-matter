@@ -32,5 +32,4 @@ public interface IPluginPlugin {
     default void afterApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
 
     }
-
 }

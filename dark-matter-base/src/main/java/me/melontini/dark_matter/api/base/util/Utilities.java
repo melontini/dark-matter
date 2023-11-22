@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.base.util;
 
 import lombok.SneakyThrows;
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.classes.ThrowingConsumer;
 import me.melontini.dark_matter.api.base.util.classes.ThrowingFunction;
 import me.melontini.dark_matter.api.base.util.classes.ThrowingRunnable;
@@ -12,10 +13,8 @@ import java.util.List;
 import java.util.Random;
 import java.util.function.*;
 
+@UtilityClass
 public final class Utilities {
-    private Utilities() {
-        throw new UnsupportedOperationException();
-    }
 
     @Deprecated
     public static boolean IS_DEV = FabricLoader.getInstance().isDevelopmentEnvironment();

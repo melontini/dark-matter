@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.minecraft.debug;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.minecraft.debug.ValueTrackerImpl;
 import org.jetbrains.annotations.ApiStatus;
 import org.jetbrains.annotations.NotNull;
@@ -8,14 +9,10 @@ import java.lang.reflect.Field;
 import java.time.Duration;
 import java.util.function.Supplier;
 
+@UtilityClass
 @ApiStatus.Experimental
 @SuppressWarnings("unused")
 public final class ValueTracker {
-
-    private ValueTracker() {
-        throw new UnsupportedOperationException();
-    }
-
 
     /**
      * This method is used to track anything using a supplier.
@@ -80,5 +77,4 @@ public final class ValueTracker {
     public static void removeTracker(@NotNull String s) {
         ValueTrackerImpl.removeTracker(s);
     }
-
 }

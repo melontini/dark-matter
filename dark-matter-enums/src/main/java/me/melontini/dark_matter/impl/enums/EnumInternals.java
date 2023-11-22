@@ -19,7 +19,6 @@ import java.util.*;
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 import static me.melontini.dark_matter.api.base.util.Utilities.runUnchecked;
 
-@ApiStatus.Internal
 public class EnumInternals {
 
     private static final Map<Class<?>, Field> ENUM_TO_FIELD = new HashMap<>();//Store the field in case someone tries to call this method a bunch of times

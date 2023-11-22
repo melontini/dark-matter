@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.reflect;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.reflect.ReflectionInternals;
 import org.jetbrains.annotations.NotNull;
 
@@ -11,6 +12,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@UtilityClass
 @SuppressWarnings("unused")
 public class Reflect {
 

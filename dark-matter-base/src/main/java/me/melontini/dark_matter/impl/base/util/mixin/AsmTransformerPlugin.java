@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.impl.base.util.mixin;
 
 import me.melontini.dark_matter.api.base.reflect.Reflect;
+import me.melontini.dark_matter.api.base.util.classes.Tuple;
 import me.melontini.dark_matter.api.base.util.mixin.AsmUtil;
 import me.melontini.dark_matter.api.base.util.mixin.IAsmTransformer;
 import me.melontini.dark_matter.api.base.util.mixin.IPluginPlugin;
@@ -21,7 +22,7 @@ import java.util.Set;
 
 public class AsmTransformerPlugin implements IPluginPlugin {
 
-    private final HashMap<String, Set<IAsmTransformer>> transformers = new HashMap<>();
+    private final HashMap<Tuple<String, String>, Set<IAsmTransformer>> transformers = new HashMap<>();
 
     @Override
     public void beforeApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
@@ -37,7 +38,7 @@ public class AsmTransformerPlugin implements IPluginPlugin {
             try {
                 Class<?> cls = Class.forName(type.getClassName());
                 if (IAsmTransformer.class.isAssignableFrom(cls)) {
-                    Set<IAsmTransformer> transformers = this.transformers.computeIfAbsent(mixinInfo.getClassName(), k -> new HashSet<>());
+                    Set<IAsmTransformer> transformers = this.transformers.computeIfAbsent(Tuple.of(mixinInfo.getClassName(), targetClassName), k -> new HashSet<>());
                     transformers.add((IAsmTransformer) Reflect.setAccessible(cls.getDeclaredConstructor()).newInstance());
                     DarkMatterLog.debug("Added transformer {} to mixin {}", type.getClassName(), mixinInfo.getClassName());
                 } else throw new IllegalStateException("javac failed me. %s is not a transformer!".formatted(type.getClassName()));
@@ -49,13 +50,13 @@ public class AsmTransformerPlugin implements IPluginPlugin {
             }
         }
 
-        Set<IAsmTransformer> transformers = this.transformers.get(mixinInfo.getClassName());
+        Set<IAsmTransformer> transformers = this.transformers.get(Tuple.of(mixinInfo.getClassName(), targetClassName));
         if (transformers != null) transformers.forEach(transformer -> transformer.beforeApply(targetClass, mixinInfo));
     }
 
     @Override
     public void afterApply(String targetClassName, ClassNode targetClass, String mixinClassName, IMixinInfo mixinInfo) {
-        Set<IAsmTransformer> transformers = this.transformers.get(mixinInfo.getClassName());
+        Set<IAsmTransformer> transformers = this.transformers.get(Tuple.of(mixinInfo.getClassName(), targetClassName));
         if (transformers != null) transformers.forEach(transformer -> transformer.afterApply(targetClass, mixinInfo));
     }
 }

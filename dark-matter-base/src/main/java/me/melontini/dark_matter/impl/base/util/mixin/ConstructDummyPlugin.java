@@ -21,7 +21,6 @@ import java.util.Map;
 
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
-@ApiStatus.Internal
 public class ConstructDummyPlugin implements IPluginPlugin {
 
     @Override //I have a feeling this is a bad idea.

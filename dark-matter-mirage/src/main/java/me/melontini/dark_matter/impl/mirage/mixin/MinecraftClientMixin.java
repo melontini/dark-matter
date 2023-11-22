@@ -11,6 +11,6 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 public class MinecraftClientMixin {
     @Inject(method = "method_29338", at = @At("TAIL"), require = 0)
     private void dark_matter$init(CallbackInfo ci) {
-        FakeWorld.init();
+        MinecraftClient.getInstance().send(FakeWorld::init);
     }
 }

@@ -18,7 +18,6 @@ import java.util.Map;
 
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
-@ApiStatus.Internal
 public final class ShouldApplyPlugin implements IPluginPlugin {
 
     private static final String SHOULD_APPLY_DESC = "L" + MixinShouldApply.class.getName().replace(".", "/") + ";";
@@ -70,5 +69,4 @@ public final class ShouldApplyPlugin implements IPluginPlugin {
             throw new RuntimeException(e);
         }
     }
-
 }

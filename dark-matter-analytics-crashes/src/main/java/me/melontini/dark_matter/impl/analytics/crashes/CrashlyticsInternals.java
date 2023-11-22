@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.analytics.crashes;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.analytics.Analytics;
 import me.melontini.dark_matter.api.analytics.crashes.Crashlytics;
 import me.melontini.dark_matter.api.base.util.MakeSure;
@@ -11,7 +12,7 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.HashMap;
 import java.util.Map;
 
-@ApiStatus.Internal
+@UtilityClass
 public final class CrashlyticsInternals {
 
     private static final Map<String, Tuple<Analytics, Crashlytics.Handler>> HANDLERS = new HashMap<>();

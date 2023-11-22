@@ -4,12 +4,10 @@ import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.content.ContentBuilder;
 import me.melontini.dark_matter.api.content.ItemGroupHelper;
-import me.melontini.dark_matter.api.content.interfaces.AnimatedItemGroup;
 import me.melontini.dark_matter.api.content.interfaces.DarkMatterEntries;
 import me.melontini.dark_matter.api.minecraft.util.TextUtil;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import me.melontini.dark_matter.impl.content.DarkMatterEntriesImpl;
-import net.fabricmc.api.EnvType;
 import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.item.ItemGroup;
@@ -27,7 +25,6 @@ public class ItemGroupBuilderImpl implements ContentBuilder.ItemGroupBuilder {
 
     private final Identifier identifier;
     private Supplier<ItemStack> icon = () -> ItemStack.EMPTY;
-    private Supplier<AnimatedItemGroup> animatedIcon;
     private String texture;
     private DarkMatterEntries.Collector entries;
     private BooleanSupplier register = Utilities.getTruth();
@@ -44,14 +41,6 @@ public class ItemGroupBuilderImpl implements ContentBuilder.ItemGroupBuilder {
     public ContentBuilder.ItemGroupBuilder icon(Supplier<ItemStack> itemStackSupplier) {
         MakeSure.notNull(itemStackSupplier, "couldn't build: " + identifier);
         this.icon = itemStackSupplier;
-        return this;
-    }
-
-    @Override
-    public ContentBuilder.ItemGroupBuilder animatedIcon(Supplier<AnimatedItemGroup> animatedIcon) {
-        if (FabricLoader.getInstance().getEnvironmentType() == EnvType.SERVER) return this;
-        MakeSure.notNull(animatedIcon, "couldn't build: " + identifier);
-        this.animatedIcon = animatedIcon;
         return this;
     }
 
@@ -110,7 +99,6 @@ public class ItemGroupBuilderImpl implements ContentBuilder.ItemGroupBuilder {
             DarkMatterEntriesImpl entries1 = new DarkMatterEntriesImpl(entriesImpl);
             this.entries.collect(entries1);
         });
-        if (this.animatedIcon != null) group.dm$setIconAnimation(this.animatedIcon);
         Registry.register(Registries.ITEM_GROUP, this.identifier, group);
         return group;
     }

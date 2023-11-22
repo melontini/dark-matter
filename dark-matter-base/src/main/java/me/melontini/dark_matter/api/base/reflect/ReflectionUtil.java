@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.reflect;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import me.melontini.dark_matter.impl.base.reflect.MiscReflectionInternals;
 import me.melontini.dark_matter.impl.base.reflect.ReflectionInternals;
@@ -17,12 +18,10 @@ import java.util.List;
 /**
  * @author <a href="https://stackoverflow.com/questions/55918972/unable-to-find-method-sun-misc-unsafe-defineclass">source</a>
  */
+@UtilityClass
 @SuppressWarnings("unused")
 @Deprecated
 public class ReflectionUtil {
-    private ReflectionUtil() {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * See {@link Reflect#findConstructor(Class, Object...)}

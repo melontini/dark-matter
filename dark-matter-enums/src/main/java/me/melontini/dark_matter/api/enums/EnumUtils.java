@@ -1,11 +1,10 @@
 package me.melontini.dark_matter.api.enums;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.enums.EnumInternals;
 
+@UtilityClass
 public class EnumUtils {
-    private EnumUtils() {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * Attempts to extend an enum by reflecting on its internal fields and adding a new enum constant.

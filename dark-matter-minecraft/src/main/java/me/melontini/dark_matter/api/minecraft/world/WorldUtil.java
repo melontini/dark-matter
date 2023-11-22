@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.minecraft.world;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.MathStuff;
 import net.minecraft.util.math.BlockPos;
@@ -8,11 +9,10 @@ import net.minecraft.world.World;
 import java.util.Optional;
 import java.util.function.BiPredicate;
 
+@UtilityClass
 @SuppressWarnings("unused")
 public class WorldUtil {
-    private WorldUtil() {
-        throw new UnsupportedOperationException();
-    }
+
     public static Optional<BlockPos> pickRandomSpot(World world, BlockPos blockPos, int range) {
         return pickRandomSpot(world, blockPos, range, 0.75, (world1, blockPos1) -> true);
     }

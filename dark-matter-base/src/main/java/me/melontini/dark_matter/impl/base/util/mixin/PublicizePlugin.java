@@ -13,7 +13,6 @@ import org.spongepowered.asm.util.Annotations;
 
 import java.lang.reflect.Modifier;
 
-@ApiStatus.Internal
 public class PublicizePlugin implements IPluginPlugin {
 
     private static final String PUBLICIZE_DESC = "L" + Publicize.class.getName().replace(".", "/") + ";";

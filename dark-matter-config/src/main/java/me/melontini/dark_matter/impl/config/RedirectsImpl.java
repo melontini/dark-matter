@@ -3,12 +3,13 @@ package me.melontini.dark_matter.impl.config;
 import me.melontini.dark_matter.api.config.RedirectsBuilder;
 import me.melontini.dark_matter.api.config.interfaces.Redirects;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
 public class RedirectsImpl implements Redirects {
 
-    private final Map<String, String> redirects = new HashMap<>();
+    private final Map<String, String> redirects = Collections.synchronizedMap(new HashMap<>());
 
     public RedirectsBuilder builder() {
         return new RedirectsBuilder() {

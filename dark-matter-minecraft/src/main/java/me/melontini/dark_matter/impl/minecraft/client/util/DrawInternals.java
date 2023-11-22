@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Optional;
 
 @Environment(EnvType.CLIENT)
-@ApiStatus.Internal
 public class DrawInternals {
 
     public static final Lazy<FakeScreen> FAKE_SCREEN = Lazy.of(() -> FakeScreen::new);

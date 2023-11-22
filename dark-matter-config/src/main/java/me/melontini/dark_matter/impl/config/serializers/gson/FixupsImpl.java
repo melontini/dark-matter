@@ -8,20 +8,17 @@ import me.melontini.dark_matter.api.config.serializers.gson.FixupsBuilder;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import org.apache.commons.lang3.StringUtils;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 
 public class FixupsImpl implements Fixups {
 
-    private final Map<String[], Set<Fixup>> fixups = new HashMap<>();
+    private final Map<String[], Set<Fixup>> fixups = Collections.synchronizedMap(new HashMap<>());
 
     public FixupsBuilder builder() {
         return new FixupsBuilder() {
             @Override
             public FixupsBuilder add(String key, Fixup fixup) {
-                FixupsImpl.this.fixups.computeIfAbsent(key.split("\\."), k -> new HashSet<>()).add(fixup);
+                FixupsImpl.this.fixups.computeIfAbsent(key.split("\\."), k -> Collections.synchronizedSet(new HashSet<>())).add(fixup);
                 return this;
             }
 

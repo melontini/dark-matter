@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.glitter;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.glitter.particles.AbstractScreenParticle;
 import me.melontini.dark_matter.impl.glitter.ScreenParticleInternals;
 import net.fabricmc.api.EnvType;
@@ -11,13 +12,10 @@ import java.util.List;
 import java.util.function.Supplier;
 
 
+@UtilityClass
 @SuppressWarnings("unused")
 @Environment(EnvType.CLIENT)
 public final class ScreenParticleHelper {
-
-    private ScreenParticleHelper() {
-        throw new UnsupportedOperationException();
-    }
 
     public static void addParticle(AbstractScreenParticle particle) {
         ScreenParticleInternals.addParticle(particle);

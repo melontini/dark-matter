@@ -7,6 +7,7 @@ import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import me.melontini.dark_matter.api.config.*;
 import me.melontini.dark_matter.api.config.interfaces.ConfigClassScanner;
+import me.melontini.dark_matter.api.config.interfaces.Option;
 import me.melontini.dark_matter.api.config.interfaces.Redirects;
 import me.melontini.dark_matter.api.config.interfaces.TextEntry;
 import me.melontini.dark_matter.api.config.serializers.ConfigSerializer;
@@ -16,8 +17,8 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.BiConsumer;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -32,7 +33,7 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     private final ModContainer mod;
     private final String name;
 
-    private Function<String, String> redirectFunc;
+    private Function<String, String> redirects;
 
     private ConfigBuilder.Getter<T> getter;
     private ConfigBuilder.Setter<T> setter;
@@ -41,10 +42,10 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     private ConfigSerializer<T> serializer;
     private Supplier<T> ctx;
 
-    private final Map<Field, String> fieldToOption = new HashMap<>();
-    private final Map<String, List<Field>> optionToFields = new LinkedHashMap<>();
+    private final Map<Option, String> fieldToOption = new ConcurrentHashMap<>();
+    private final Map<String, List<FieldOption>> optionToFields = Collections.synchronizedMap(new LinkedHashMap<>());
 
-    private final Set<ConfigClassScanner> scanners = new LinkedHashSet<>();
+    private final Set<ConfigClassScanner> scanners = Collections.synchronizedSet(new LinkedHashSet<>());
 
     public ConfigManagerImpl(Class<T> cls, ModContainer mod, String name) {
         this.configClass = cls;
@@ -60,10 +61,8 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     }
 
     ConfigManagerImpl<T> setRedirects(RedirectsBuilder builder) {
-        EntrypointRunner.run(getShareId("redirects"), Consumer.class, consumer -> Utilities.consume(builder, cast(consumer)));
-
         Redirects redirects = builder.build();
-        this.redirectFunc = redirects.isEmpty() ? Function.identity() : redirects::redirect;
+        this.redirects = redirects.isEmpty() ? Function.identity() : redirects::redirect;
         return this;
     }
 
@@ -77,7 +76,8 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         this.scanners.add(scanner);
         EntrypointRunner.run(getShareId("scanner"), Supplier.class, supplier -> this.scanners.add(cast(supplier.get())));
         this.scanners.removeIf(Objects::isNull);
-        startScan();
+
+        iterate(this.getType(), "", new HashSet<>(Arrays.asList(this.getType().getClasses())), new ArrayList<>());
         return this;
     }
 
@@ -91,23 +91,23 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     }
 
     private void iterate(Class<?> cls, String parentString, Set<Class<?>> recursive, List<Field> fieldRef) {
-        for (Field declaredField : cls.getDeclaredFields()) {
-            if (Modifier.isStatic(declaredField.getModifiers())) continue;
+        for (Field field : cls.getFields()) {
+            if (Modifier.isStatic(field.getModifiers())) continue;
 
-            fieldRef.add(declaredField);
+            fieldRef.add(field);
             ImmutableList<Field> fieldRefView = ImmutableList.copyOf(fieldRef);
-            optionToFields.putIfAbsent(parentString + declaredField.getName(), fieldRefView);
-            fieldToOption.putIfAbsent(declaredField, parentString + declaredField.getName());
+            optionToFields.putIfAbsent(parentString + field.getName(), fieldRefView.stream().map(FieldOption::new).toList());
+            fieldToOption.putIfAbsent(new FieldOption(field), parentString + field.getName());
 
             if (!this.scanners.isEmpty()) {
                 ImmutableSet<Class<?>> classes = ImmutableSet.copyOf(recursive);
-                scanners.forEach(scanner -> scanner.scan(cls, declaredField, parentString, classes, fieldRefView));
+                scanners.forEach(scanner -> scanner.scan(cls, field, parentString, classes, fieldRefView));
             }
-            if (recursive.contains(declaredField.getType())) {
-                recursive.addAll(Arrays.asList(declaredField.getType().getClasses()));
-                iterate(declaredField.getType(), parentString + declaredField.getName() + ".", recursive, fieldRef);
+            if (recursive.contains(field.getType())) {
+                recursive.addAll(Arrays.asList(field.getType().getClasses()));
+                iterate(field.getType(), parentString + field.getName() + ".", recursive, fieldRef);
             }
-            fieldRef.remove(declaredField);
+            fieldRef.remove(field);
         }
     }
 
@@ -115,10 +115,6 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     public void load() {
         this.config.set(this.getSerializer().load());
         this.save();
-    }
-
-    private void startScan() {
-        iterate(this.getType(), "", new HashSet<>(Arrays.asList(this.getType().getClasses())), new ArrayList<>());
     }
 
     @Override
@@ -137,23 +133,24 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     }
 
     @Override
-    public <V> V get(String option) throws NoSuchFieldException {
-        try {
-            return cast(this.getter.get(this, this.redirectFunc.apply(option)));
-        } catch (IllegalAccessException t) {
-            throw new RuntimeException(t);
-        }
+    public <V> V get(String option) {
+        return cast(this.getter.get(new ConfigBuilder.AccessorContext<>(this, getConfig()), this.redirects.apply(option)));
     }
 
     @Override
-    public List<Field> getFields(String option) throws NoSuchFieldException {
-        List<Field> f = this.optionToFields.get(option = this.redirectFunc.apply(option));
-        if (f == null) throw new NoSuchFieldException(option);
+    public <V> V getDefault(String option) {
+        return cast(this.getter.get(new ConfigBuilder.AccessorContext<>(this, getDefaultConfig()), this.redirects.apply(option)));
+    }
+
+    @Override
+    public List<Option> getFields(String option) {
+        List<FieldOption> f = this.optionToFields.get(option = this.redirects.apply(option));
+        if (f == null) throw new NoSuchOptionException(option);
         return Collections.unmodifiableList(f);
     }
 
     @Override
-    public String getOption(Field field) {
+    public String getOption(Option field) {
         return this.fieldToOption.get(field);
     }
 
@@ -183,12 +180,8 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
     }
 
     @Override
-    public void set(String option, Object value) throws NoSuchFieldException {
-        try {
-            this.setter.set(this, this.redirectFunc.apply(option), value);
-        } catch (IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+    public void set(String option, Object value) {
+        this.setter.set(new ConfigBuilder.AccessorContext<>(this, getConfig()), this.redirects.apply(option), value);
     }
 
     @Override
@@ -206,15 +199,15 @@ public class ConfigManagerImpl<T> implements ConfigManager<T> {
         return this.getMod().getMetadata().getId() + ":config/" + this.getName() + "/" + key;
     }
 
-    static class ConfigRef<T> {
+    private static class ConfigRef<T> {
 
-        volatile T value;
+        private volatile T value;
 
-        public T get() {
+        private T get() {
             return this.value;
         }
 
-        void set(T value) {
+        private void set(T value) {
             this.value = value;
         }
 

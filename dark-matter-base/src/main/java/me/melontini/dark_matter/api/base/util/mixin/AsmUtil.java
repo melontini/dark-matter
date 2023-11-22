@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.util.mixin;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.util.mixin.AsmImpl;
 import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
@@ -10,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
 
+@UtilityClass
 public class AsmUtil {
 
     public static Map<String, Object> mapAnnotationNode(AnnotationNode node) {

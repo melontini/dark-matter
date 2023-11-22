@@ -14,7 +14,6 @@ import java.time.Instant;
 import java.util.*;
 import java.util.function.Supplier;
 
-@ApiStatus.Internal
 public class ValueTrackerImpl {
 
     private static final Map<String, Supplier<?>> TRACKERS = new LinkedHashMap<>();

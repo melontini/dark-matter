@@ -6,7 +6,6 @@ import org.jetbrains.annotations.ApiStatus;
 
 import java.util.Set;
 
-@ApiStatus.Internal
 public class DarkMatterEnumsPlugin extends ExtendablePlugin {
 
     @Override

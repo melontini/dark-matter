@@ -3,6 +3,7 @@ package me.melontini.dark_matter.impl.mirage;
 import com.mojang.authlib.GameProfile;
 import com.mojang.serialization.Lifecycle;
 import me.melontini.dark_matter.api.base.util.Utilities;
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.minecraft.client.MinecraftClient;
@@ -19,13 +20,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.dimension.DimensionOptionsRegistryHolder;
 import net.minecraft.world.dimension.DimensionTypes;
 import net.minecraft.world.gen.WorldPresets;
-import org.jetbrains.annotations.ApiStatus;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-@ApiStatus.Internal
+@UtilityClass
 public class FakeWorld {
 
     public static Lazy<ClientWorld> INSTANCE = Lazy.of(() -> () -> {

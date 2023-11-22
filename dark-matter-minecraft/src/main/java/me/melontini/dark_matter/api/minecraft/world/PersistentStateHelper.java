@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.minecraft.world;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.minecraft.world.interfaces.DeserializableState;
 import me.melontini.dark_matter.impl.minecraft.world.PersistentStateInternals;
 import net.minecraft.nbt.NbtCompound;
@@ -13,6 +14,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+@UtilityClass
 @ApiStatus.Experimental
 public final class PersistentStateHelper {
 

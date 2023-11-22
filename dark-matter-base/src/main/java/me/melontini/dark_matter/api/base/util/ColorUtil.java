@@ -1,10 +1,10 @@
 package me.melontini.dark_matter.api.base.util;
 
+import lombok.experimental.UtilityClass;
+
+@UtilityClass
 public class ColorUtil {
 
-    private ColorUtil() {
-        throw new UnsupportedOperationException();
-    }
     public static int toColor(float r, float g, float b) {
         return toColor((int) (r * 255 + 0.5), (int) (g * 255 + 0.5), (int) (b * 255 + 0.5));
     }

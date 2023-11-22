@@ -21,7 +21,6 @@ import java.util.Optional;
 
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
-@ApiStatus.Internal
 public class MixinPredicatePlugin implements IPluginPlugin {
 
     private static final String PREDICATE_DESC = "L" + MixinPredicate.class.getName().replace(".", "/") + ";";
@@ -77,5 +76,4 @@ public class MixinPredicatePlugin implements IPluginPlugin {
 
         return true;
     }
-
 }

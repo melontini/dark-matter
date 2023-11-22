@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.base.util.mixin;
 
+import lombok.experimental.UtilityClass;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.AnnotationNode;
 
@@ -7,6 +8,7 @@ import java.util.*;
 
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
+@UtilityClass
 public class AsmImpl {
 
     private static final List<Map<String, Object>> EMPTY_ANN_LIST = Collections.unmodifiableList(new ArrayList<>());

@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.glitter;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.glitter.particles.AbstractScreenParticle;
 import me.melontini.dark_matter.impl.glitter.particles.VanillaParticle;
@@ -14,14 +15,10 @@ import org.jetbrains.annotations.ApiStatus;
 import java.util.*;
 import java.util.function.Supplier;
 
-@ApiStatus.Internal
+@UtilityClass
 @SuppressWarnings("unused")
 @Environment(EnvType.CLIENT)
 public class ScreenParticleInternals {
-
-    private ScreenParticleInternals() {
-        throw new UnsupportedOperationException();
-    }
 
     private static final Set<AbstractScreenParticle> SCREEN_PARTICLES = new LinkedHashSet<>();
     private static final Set<AbstractScreenParticle> SCREEN_PARTICLES_REMOVAL = new HashSet<>();

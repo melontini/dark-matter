@@ -1,13 +1,12 @@
 package me.melontini.dark_matter.api.base.util;
 
+import lombok.experimental.UtilityClass;
+
 import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
+@UtilityClass
 public final class MathStuff {
-
-    private MathStuff() {
-        throw new UnsupportedOperationException();
-    }
 
     //"doesn't MathHelper already add this?" - yes, but it uses Mogang's random, and I don't like it.
     public static double nextDouble(Random random, double min, double max) {

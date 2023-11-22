@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.enums;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -15,15 +16,12 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.function.Predicate;
 
+@UtilityClass
 @SuppressWarnings("unused")
 public class EnumWrapper {
-    private EnumWrapper() {
-        throw new UnsupportedOperationException();
-    }
+
+    @UtilityClass
     public static class AbstractMinecartEntityType {
-        private AbstractMinecartEntityType() {
-            throw new UnsupportedOperationException();
-        }
         public static AbstractMinecartEntity.Type extend(String internalName) {
             MakeSure.notEmpty(internalName, "Tried to extend AbstractMinecartEntity.Type with an empty internalName");
 
@@ -31,10 +29,8 @@ public class EnumWrapper {
         }
     }
 
+    @UtilityClass
     public static class BoatEntityType {
-        private BoatEntityType() {
-            throw new UnsupportedOperationException();
-        }
         public static BoatEntity.Type extend(String internalName, Block base, String name) {
             MakeSure.notEmpty(internalName, "Tried to extend BoatEntity.Type with an empty internalName");
             MakeSure.notNull(base, "Tried to extend BoatEntity.Type with a null block");
@@ -44,10 +40,8 @@ public class EnumWrapper {
         }
     }
 
+    @UtilityClass
     public static class EnchantmentTarget {
-        private EnchantmentTarget() {
-            throw new UnsupportedOperationException();
-        }
         public static net.minecraft.enchantment.EnchantmentTarget extend(String internalName, Predicate<Item> predicate) {
             MakeSure.notEmpty(internalName, "Tried to extend EnchantmentTarget with an empty internalName");
             MakeSure.notNull(predicate, "Tried to extend EnchantmentTarget with a null predicate");
@@ -56,10 +50,8 @@ public class EnumWrapper {
         }
     }
 
+    @UtilityClass
     public static class Formatting {
-        private Formatting() {
-            throw new UnsupportedOperationException();
-        }
         public static net.minecraft.util.Formatting extend(String internalName, String name, Character code, Boolean modifier, Integer colorIndex, @Nullable Integer colorValue) {
             MakeSure.notEmpty(internalName, "Tried to extend Formatting with an empty internalName");
             MakeSure.notNulls(code, modifier, colorIndex, "Tried to extend Formatting with a null argument");
@@ -85,10 +77,8 @@ public class EnumWrapper {
         }
     }
 
+    @UtilityClass
     public static class Rarity {
-        private Rarity() {
-            throw new UnsupportedOperationException();
-        }
         public static net.minecraft.util.Rarity extend(String internalName, net.minecraft.util.Formatting formatting) {
             MakeSure.notEmpty(internalName, "Tried to extend Rarity with an empty internalName");
             MakeSure.notNull(formatting, "Tried to extend Rarity with a null formatting");
@@ -97,11 +87,9 @@ public class EnumWrapper {
         }
     }
 
+    @UtilityClass
     @Environment(EnvType.CLIENT)
     public static class RecipeBookGroup {
-        private RecipeBookGroup() {
-            throw new UnsupportedOperationException();
-        }
         public static net.minecraft.client.recipebook.RecipeBookGroup extend(String internalName, ItemStack... stacks) {
             MakeSure.notEmpty(internalName, "Tried to extend RecipeBookGroup with an empty internalName");
 
@@ -109,10 +97,8 @@ public class EnumWrapper {
         }
     }
 
+    @UtilityClass
     public static class RaidMember {
-        private RaidMember() {
-            throw new UnsupportedOperationException();
-        }
         public static Raid.Member extend(String internalName, EntityType<? extends RaiderEntity> type, int[] countInWave) {
             MakeSure.notEmpty(internalName, "Tried to extend Raid.Member with an empty internalName");
             MakeSure.isTrue(countInWave.length > 0, "Tried to extend Raid.Member with empty countInWave array");

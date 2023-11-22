@@ -26,6 +26,13 @@ public interface ConfigBuilder<T> {
     }
 
     /**
+     * If config name is the same as modId.
+     */
+    static <T> ConfigBuilder<T> create(Class<T> cls, ModContainer mod) {
+        return new ConfigBuilderImpl<>(cls, mod, mod.getMetadata().getId());
+    }
+
+    /**
      * Allows to build the config directly, instead of using reflection. Will fall back to reflection if not provided.
      */
     ConfigBuilder<T> constructor(Supplier<T> ctx);
@@ -77,10 +84,12 @@ public interface ConfigBuilder<T> {
     ConfigManager<T> build();
 
     interface Getter<T> {
-        Object get(ConfigManager<T> configManager, String option) throws NoSuchFieldException, IllegalAccessException;
+        Object get(AccessorContext<T> context, String option);
     }
 
     interface Setter<T> {
-        void set(ConfigManager<T> manager, String option, Object value) throws NoSuchFieldException, IllegalAccessException;
+        void set(AccessorContext<T> context, String option, Object value);
     }
+
+    record AccessorContext<T>(ConfigManager<T> manager, T config) {}
 }

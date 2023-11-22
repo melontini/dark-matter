@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.base.reflect;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.base.util.classes.Lazy;
@@ -14,11 +15,9 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 
+@UtilityClass
 @ApiStatus.Internal
 public class UnsafeInternals {
-    private UnsafeInternals() {
-        throw new UnsupportedOperationException();
-    }
 
     private static final Lazy<Unsafe> UNSAFE = Lazy.of(() -> () -> {
         try {

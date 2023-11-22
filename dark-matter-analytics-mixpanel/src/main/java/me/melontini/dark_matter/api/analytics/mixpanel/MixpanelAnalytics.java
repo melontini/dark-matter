@@ -1,6 +1,7 @@
 package me.melontini.dark_matter.api.analytics.mixpanel;
 
 import com.google.gson.JsonObject;
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.analytics.Analytics;
 import me.melontini.dark_matter.api.analytics.Prop;
 import me.melontini.dark_matter.api.analytics.mixpanel.interfaces.Mixpanel;
@@ -11,11 +12,8 @@ import org.jetbrains.annotations.NotNull;
 /**
  * The MixpanelAnalytics class provides methods for sending analytics data to Mixpanel, a cloud-based analytics platform.
  */
+@UtilityClass
 public class MixpanelAnalytics {
-
-    private MixpanelAnalytics() {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * Initializes a Handler instance for the provided token and stores it in the MESSAGE_HANDLERS map.

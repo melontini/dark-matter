@@ -1,15 +1,14 @@
 package me.melontini.dark_matter.api.base.reflect;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.reflect.UnsafeInternals;
 import org.jetbrains.annotations.Nullable;
 import sun.misc.Unsafe;
 
 import java.lang.reflect.Field;
 
+@UtilityClass
 public class UnsafeAccess {
-    private UnsafeAccess() {
-        throw new UnsupportedOperationException();
-    }
 
     public static void putReference(Field field, Object o, Object value) {
         UnsafeInternals.setReference(field, o, value);

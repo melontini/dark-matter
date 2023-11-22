@@ -12,7 +12,6 @@ import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.util.UUID;
 
-@ApiStatus.Internal
 public class AnalyticsImpl implements Analytics {
 
     private final UUID uuid;

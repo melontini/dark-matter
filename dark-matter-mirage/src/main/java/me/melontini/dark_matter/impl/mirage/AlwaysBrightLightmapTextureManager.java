@@ -2,9 +2,7 @@ package me.melontini.dark_matter.impl.mirage;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.render.LightmapTextureManager;
-import org.jetbrains.annotations.ApiStatus;
 
-@ApiStatus.Internal
 public class AlwaysBrightLightmapTextureManager extends LightmapTextureManager {
 
     public static final AlwaysBrightLightmapTextureManager INSTANCE = new AlwaysBrightLightmapTextureManager();

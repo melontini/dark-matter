@@ -1,6 +1,6 @@
 package me.melontini.dark_matter.impl.recipe_book.mixin;
 
-import me.melontini.dark_matter.impl.recipe_book.RecipeBookInternals;
+import me.melontini.dark_matter.impl.recipe_book.ClientRecipeBookUtils;
 import net.minecraft.client.recipebook.RecipeBookGroup;
 import net.minecraft.recipe.book.RecipeBookCategory;
 import org.spongepowered.asm.mixin.Mixin;
@@ -15,6 +15,6 @@ public class RecipeBookGroupMixin {
 
     @Inject(at = @At("HEAD"), method = "getGroups", cancellable = true)
     private static void dark_matter$getGroups(RecipeBookCategory category, CallbackInfoReturnable<List<RecipeBookGroup>> cir) {
-        RecipeBookInternals.getGroups(category).ifPresent(cir::setReturnValue);
+        ClientRecipeBookUtils.getGroups(category).ifPresent(cir::setReturnValue);
     }
 }

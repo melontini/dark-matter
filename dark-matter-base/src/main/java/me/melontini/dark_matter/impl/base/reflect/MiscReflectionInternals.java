@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.base.reflect;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import org.jetbrains.annotations.NotNull;
@@ -13,6 +14,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.security.ProtectionDomain;
 
+@UtilityClass
 public class MiscReflectionInternals {
 
     private static final Lazy<MethodHandle> defineClass = Lazy.of(() -> () -> ReflectionInternals.trustedLookup().findVirtual(ClassLoader.class, "defineClass", MethodType.methodType(Class.class, String.class, byte[].class, int.class, int.class, ProtectionDomain.class)));

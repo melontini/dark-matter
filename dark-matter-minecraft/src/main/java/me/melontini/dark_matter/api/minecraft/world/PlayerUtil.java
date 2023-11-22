@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.minecraft.world;
 
+import lombok.experimental.UtilityClass;
 import net.minecraft.entity.ai.TargetPredicate;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.util.math.BlockPos;
@@ -12,11 +13,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+@UtilityClass
 @SuppressWarnings("unused")
 public class PlayerUtil {
-    private PlayerUtil() {
-        throw new UnsupportedOperationException();
-    }
 
     public static List<PlayerEntity> getPlayers(TargetPredicate targetPredicate, World world, Box box) {
         return world.getPlayers().stream().filter(playerEntity -> box.contains(playerEntity.getX(), playerEntity.getY(), playerEntity.getZ()) && targetPredicate.test(null, playerEntity)).collect(Collectors.toList());

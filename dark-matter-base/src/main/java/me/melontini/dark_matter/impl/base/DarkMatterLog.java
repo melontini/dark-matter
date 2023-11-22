@@ -1,9 +1,10 @@
 package me.melontini.dark_matter.impl.base;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.PrependingLogger;
 import org.jetbrains.annotations.ApiStatus;
 
-@ApiStatus.Internal
+@UtilityClass
 public final class DarkMatterLog {
 
     private static final PrependingLogger BACKING = PrependingLogger.get("Dark Matter", PrependingLogger.NAME_CLASS_MIX_WRAPPED);

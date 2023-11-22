@@ -1,16 +1,15 @@
 package me.melontini.dark_matter.api.minecraft.util;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MathStuff;
 import net.minecraft.item.ItemStack;
 import net.minecraft.util.collection.DefaultedList;
 
 import java.util.Collection;
 
+@UtilityClass
 @SuppressWarnings("unused")
 public class MinecraftUtil {
-    private MinecraftUtil() {
-        throw new UnsupportedOperationException();
-    }
 
     public static void appendStacks(Collection<ItemStack> stacks, Collection<ItemStack> list) {
         appendStacks(stacks, list, true);

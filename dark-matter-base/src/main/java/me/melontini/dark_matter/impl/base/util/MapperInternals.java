@@ -1,11 +1,12 @@
 package me.melontini.dark_matter.impl.base.util;
 
+import lombok.experimental.UtilityClass;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.MappingResolver;
 import org.jetbrains.annotations.ApiStatus;
 import org.objectweb.asm.Type;
 
-@ApiStatus.Internal
+@UtilityClass
 public class MapperInternals {
 
     private static final MappingResolver RESOLVER = FabricLoader.getInstance().getMappingResolver();

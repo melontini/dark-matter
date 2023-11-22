@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.util;
 
+import lombok.experimental.UtilityClass;
 import org.apache.commons.lang3.ArrayUtils;
 import org.jetbrains.annotations.ApiStatus;
 
@@ -12,13 +13,11 @@ import java.util.Arrays;
 import java.util.Base64;
 import java.util.HexFormat;
 
+@UtilityClass
 @ApiStatus.Experimental
 public final class BadCrypt {
 
-    private BadCrypt() {
-        throw new UnsupportedOperationException();
-    }
-
+    @UtilityClass
     public static final class Base64Based {
 
         public static String encryptToStr(byte[] str, byte[] b, MessageDigest d) throws Exception {
@@ -38,6 +37,7 @@ public final class BadCrypt {
         }
     }
 
+    @UtilityClass
     private static class Holder {
         static final SecureRandom random = new SecureRandom();
     }

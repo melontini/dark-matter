@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.minecraft.data;
 
+import lombok.experimental.UtilityClass;
 import net.minecraft.inventory.Inventory;
 import net.minecraft.item.ItemStack;
 import net.minecraft.nbt.NbtCompound;
@@ -9,11 +10,9 @@ import net.minecraft.util.math.MathHelper;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 
+@UtilityClass
 @SuppressWarnings("unused")
 public class NbtUtil {
-    private NbtUtil() {
-        throw new UnsupportedOperationException();
-    }
 
     public static @NotNull NbtCompound writeInventoryToNbt(NbtCompound nbt, @NotNull Inventory inventory) {
         return writeInventoryToNbt("Items", nbt, inventory);

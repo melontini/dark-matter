@@ -7,12 +7,12 @@ import me.melontini.dark_matter.api.config.ConfigManager;
 import me.melontini.dark_matter.api.config.OptionProcessorRegistry;
 import me.melontini.dark_matter.api.config.RedirectsBuilder;
 import me.melontini.dark_matter.api.config.interfaces.ConfigClassScanner;
+import me.melontini.dark_matter.api.config.interfaces.Option;
 import me.melontini.dark_matter.api.config.interfaces.TextEntry;
 import me.melontini.dark_matter.api.config.serializers.ConfigSerializer;
 import me.melontini.dark_matter.api.config.serializers.gson.GsonSerializers;
 import net.fabricmc.loader.api.ModContainer;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
@@ -58,37 +58,37 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
     }
 
     @Override
-    public ConfigBuilderImpl<T> redirects(Consumer<RedirectsBuilder> redirects) {
+    public ConfigBuilder<T> redirects(Consumer<RedirectsBuilder> redirects) {
         redirects.accept(this.redirects);
         return this;
     }
 
     @Override
-    public ConfigBuilderImpl<T> getter(Getter<T> getter) {
+    public ConfigBuilder<T> getter(Getter<T> getter) {
         this.getter = getter;
         return this;
     }
 
     @Override
-    public ConfigBuilderImpl<T> setter(Setter<T> setter) {
+    public ConfigBuilder<T> setter(Setter<T> setter) {
         this.setter = setter;
         return this;
     }
 
     @Override
-    public ConfigBuilderImpl<T> processors(BiConsumer<OptionProcessorRegistry<T>, ModContainer> consumer) {
+    public ConfigBuilder<T> processors(BiConsumer<OptionProcessorRegistry<T>, ModContainer> consumer) {
         this.registrar = consumer;
         return this;
     }
 
     @Override
-    public ConfigBuilderImpl<T> scanner(ConfigClassScanner scanner) {
+    public ConfigBuilder<T> scanner(ConfigClassScanner scanner) {
         this.scanner = scanner;
         return this;
     }
 
     @Override
-    public ConfigBuilderImpl<T> defaultReason(Function<TextEntry.InfoHolder<T>, TextEntry> reason) {
+    public ConfigBuilder<T> defaultReason(Function<TextEntry.InfoHolder<T>, TextEntry> reason) {
         this.reasonFactory = reason;
         return this;
     }
@@ -108,33 +108,30 @@ public class ConfigBuilderImpl<T> implements ConfigBuilder<T> {
     }
 
     private Function<TextEntry.InfoHolder<T>, TextEntry> defaultReason() {
-        return (holder) -> TextEntry.translatable(holder.manager().getMod().getMetadata().getId() + ".config.option_manager.reason." + holder.processor());
+        return (holder) -> TextEntry.translatable(holder.manager().getMod().getMetadata().getId() + ".config.option_manager.reason." + holder.processor().id().replace(':', '.'));
     }
 
     private Getter<T> defaultGetter() {
-        return (manager, option) -> {
-            List<Field> fields = manager.getFields(option);
-            Object obj = manager.getConfig();
-            for (Field field : fields) {
-                field.setAccessible(true);
+        return (context, option) -> Utilities.supplyUnchecked(() -> {
+            List<Option> fields = context.manager().getFields(option);
+            Object obj = context.config();
+            for (Option field : fields) {
                 obj = field.get(obj);
             }
             return cast(obj);
-        };
+        });
     }
 
     private Setter<T> defaultSetter() {
-        return (manager, option, value) -> {
-            List<Field> fields = manager.getFields(option);
-            Object obj = manager.getConfig();
+        return (context, option, value) -> Utilities.runUnchecked(() -> {
+            List<Option> fields = context.manager().getFields(option);
+            Object obj = context.config();
             for (int i = 0; i < fields.size() - 1; i++) {
-                Field field = fields.get(i);
-                field.setAccessible(true);
+                Option field = fields.get(i);
                 obj = field.get(obj);
             }
-            Field f = fields.get(fields.size() - 1);
-            f.setAccessible(true);
+            Option f = fields.get(fields.size() - 1);
             f.set(obj, value);
-        };
+        });
     }
 }

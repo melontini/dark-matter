@@ -1,10 +1,12 @@
 package me.melontini.dark_matter.api.base.util;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.util.MapperInternals;
 import org.objectweb.asm.Type;
 
 import java.lang.invoke.MethodType;
 
+@UtilityClass
 public class Mapper {
 
     public static String mapClass(String name) {

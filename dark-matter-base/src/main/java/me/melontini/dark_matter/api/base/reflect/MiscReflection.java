@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.reflect;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.reflect.MiscReflectionInternals;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -9,6 +10,7 @@ import java.lang.invoke.VarHandle;
 import java.lang.reflect.Field;
 import java.security.ProtectionDomain;
 
+@UtilityClass
 public class MiscReflection {
 
     //

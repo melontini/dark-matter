@@ -1,15 +1,13 @@
 package me.melontini.dark_matter.api.content;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.content.TextFormattingInternals;
 import net.minecraft.text.TextColor;
 import net.minecraft.util.Formatting;
 import org.jetbrains.annotations.NotNull;
 
+@UtilityClass
 public class TextFormattingUtil {
-
-    private TextFormattingUtil() {
-        throw new UnsupportedOperationException();
-    }
 
     /**
      * Registers a new color for an existing {@link Formatting} element.
@@ -26,5 +24,4 @@ public class TextFormattingUtil {
     public static @NotNull TextColor addTextColor(@NotNull Formatting formatting) {
         return TextFormattingInternals.addTextColor(formatting);
     }
-
 }

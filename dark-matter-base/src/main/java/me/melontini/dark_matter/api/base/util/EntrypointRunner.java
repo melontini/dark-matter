@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.util;
 
+import lombok.experimental.UtilityClass;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.fabricmc.loader.api.entrypoint.EntrypointContainer;
@@ -8,6 +9,7 @@ import java.util.Collection;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 
+@UtilityClass
 public class EntrypointRunner {
 
     public static <T> void runWithContext(String entrypoint, Class<T> type, BiConsumer<? super T, ModContainer> invoker) {

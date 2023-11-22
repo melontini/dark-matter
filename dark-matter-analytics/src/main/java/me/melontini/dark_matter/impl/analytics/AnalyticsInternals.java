@@ -2,6 +2,7 @@ package me.melontini.dark_matter.impl.analytics;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.fabricmc.loader.api.FabricLoader;
 import org.jetbrains.annotations.ApiStatus;
@@ -13,7 +14,7 @@ import java.util.Optional;
 import java.util.Properties;
 import java.util.UUID;
 
-@ApiStatus.Internal
+@UtilityClass
 public class AnalyticsInternals {
 
     private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();

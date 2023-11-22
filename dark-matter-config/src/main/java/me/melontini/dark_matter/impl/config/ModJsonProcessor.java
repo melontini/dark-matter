@@ -3,6 +3,7 @@ package me.melontini.dark_matter.impl.config;
 import me.melontini.dark_matter.api.base.util.Utilities;
 import me.melontini.dark_matter.api.base.util.classes.Lazy;
 import me.melontini.dark_matter.api.config.ConfigManager;
+import me.melontini.dark_matter.api.config.interfaces.Option;
 import me.melontini.dark_matter.impl.base.DarkMatterLog;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
@@ -10,8 +11,8 @@ import net.fabricmc.loader.api.VersionParsingException;
 import net.fabricmc.loader.api.metadata.CustomValue;
 import net.fabricmc.loader.api.metadata.version.VersionPredicate;
 
-import java.lang.reflect.Field;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 class ModJsonProcessor {
@@ -39,8 +40,8 @@ class ModJsonProcessor {
         map.put(char.class, element -> element.getAsString().charAt(0));
     }));
 
-    final Map<String, Object> modJson = new LinkedHashMap<>();
-    private final Map<Field, Set<ModContainer>> modBlame = new HashMap<>();
+    final Map<String, Object> modJson = Collections.synchronizedMap(new LinkedHashMap<>());
+    private final Map<Option, Set<ModContainer>> modBlame = new ConcurrentHashMap<>();
     private final String json_key;
     private final ConfigManager<?> manager;
     boolean done = false;
@@ -77,28 +78,22 @@ class ModJsonProcessor {
 
     private void processValues(CustomValue.CvObject values, ModContainer mod) {
         for (Map.Entry<String, CustomValue> feature : values) {
-            Field f;
-            try {
-                f = manager.getField(feature.getKey());
-            } catch (NoSuchFieldException e) {
-                DarkMatterLog.error("Couldn't find option {}. Mod: {}", feature.getKey(), mod.getMetadata().getId());
-                continue;
-            }
+            Option f = manager.getField(feature.getKey());
 
-            var converter = TYPES.get().get(f.getType());
+            var converter = TYPES.get().get(f.type());
             if (converter == null) {
-                DarkMatterLog.error("Unsupported {} type. Mod: {}, Type: {}", this.getKey(), mod.getMetadata().getId(), f.getType());
+                DarkMatterLog.error("Unsupported {} type. Mod: {}, Type: {}", this.getKey(), mod.getMetadata().getId(), f.type());
                 continue;
             }
             addModJson(mod, f, feature.getKey(), converter.apply(feature.getValue()));
         }
     }
 
-    Set<ModContainer> blameMods(String feature) throws NoSuchFieldException {
+    Set<ModContainer> blameMods(String feature) {
         return modBlame.getOrDefault(manager.getField(feature), Collections.emptySet());
     }
 
-    Set<ModContainer> blameMods(Field field) {
+    Set<ModContainer> blameMods(Option field) {
         return modBlame.getOrDefault(field, Collections.emptySet());
     }
 
@@ -106,7 +101,7 @@ class ModJsonProcessor {
         return this.json_key;
     }
 
-    private void addModJson(ModContainer mod, Field field, String feature, Object value) {
+    private void addModJson(ModContainer mod, Option field, String feature, Object value) {
         modJson.put(feature, value);
         modBlame.computeIfAbsent(field, k -> new LinkedHashSet<>()).add(mod);
     }

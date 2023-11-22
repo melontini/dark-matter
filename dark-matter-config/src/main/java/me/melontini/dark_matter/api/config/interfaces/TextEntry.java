@@ -3,8 +3,6 @@ package me.melontini.dark_matter.api.config.interfaces;
 import me.melontini.dark_matter.api.config.ConfigManager;
 import me.melontini.dark_matter.api.config.OptionManager;
 
-import java.lang.reflect.Field;
-
 public interface TextEntry {
 
     static TextEntry literal(String literal) {
@@ -53,5 +51,5 @@ public interface TextEntry {
 
     boolean isTranslatable();
 
-    record InfoHolder<T>(ConfigManager<T> manager, OptionManager.ProcessorEntry<T> processor, String option, Field field) {}
+    record InfoHolder<T>(ConfigManager<T> manager, OptionManager.ProcessorEntry<T> processor, String option, Option field) {}
 }

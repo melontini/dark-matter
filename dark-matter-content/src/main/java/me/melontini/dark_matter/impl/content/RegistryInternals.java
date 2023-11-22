@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.impl.content;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.api.base.util.MakeSure;
 import me.melontini.dark_matter.api.base.util.Utilities;
 import net.fabricmc.fabric.api.object.builder.v1.block.entity.FabricBlockEntityTypeBuilder;
@@ -31,14 +32,13 @@ import java.util.regex.Pattern;
 
 import static me.melontini.dark_matter.api.base.util.Utilities.cast;
 
+@UtilityClass
 @ApiStatus.Internal
 @SuppressWarnings({"unused", "Convert2MethodRef"})
 public class RegistryInternals {
-    private RegistryInternals() {
-        throw new UnsupportedOperationException();
-    }
+
     private static boolean DONE;
-    protected static final Map<Block, BlockEntityType<?>> BLOCK_ENTITY_LOOKUP = Utilities.consume(new HashMap<>(), map -> {
+    private static final Map<Block, BlockEntityType<?>> BLOCK_ENTITY_LOOKUP = Utilities.consume(new HashMap<>(), map -> {
         Registries.BLOCK_ENTITY_TYPE.forEach(beType -> {
             for (Block block : beType.blocks) {
                 map.putIfAbsent(block, beType);

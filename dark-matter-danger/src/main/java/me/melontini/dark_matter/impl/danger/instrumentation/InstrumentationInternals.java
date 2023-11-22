@@ -166,7 +166,7 @@ public class InstrumentationInternals {
         } catch (Throwable ignored) {}
 
 
-        AtomicReference<Throwable> t = new AtomicReference<>();
+        ThrowableStorage<Throwable> t = new ThrowableStorage<>();
         ModuleLayer.boot().findModule("java.instrument").map(module -> {
             try {
                 Class<?> cls = Class.forName("sun.instrument.InstrumentationImpl");
@@ -180,7 +180,7 @@ public class InstrumentationInternals {
             }
             return self;
         }).orElseThrow(() -> new IllegalStateException("'java.instrument' module is not available!"));
-        if (t.get() != null) throw t.get();
+        t.tryThrow();
 
         return ByteBuddyAgent.getInstrumentation();
     }

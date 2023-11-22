@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.base.util;
 
+import lombok.experimental.UtilityClass;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -12,12 +13,9 @@ import java.util.function.Supplier;
 /**
  * A utility class for ensuring that certain conditions are true, throwing an exception if not.
  */
+@UtilityClass
 @SuppressWarnings("UnusedReturnValue")
 public final class MakeSure {
-
-    private MakeSure() {
-        throw new UnsupportedOperationException();
-    }
 
     @Contract(value = "null -> fail; !null -> param1", pure = true)
     public static <T> @NotNull T notNull(@Nullable T thing) {

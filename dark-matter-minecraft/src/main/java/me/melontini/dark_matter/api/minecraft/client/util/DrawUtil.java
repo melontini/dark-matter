@@ -1,5 +1,6 @@
 package me.melontini.dark_matter.api.minecraft.client.util;
 
+import lombok.experimental.UtilityClass;
 import me.melontini.dark_matter.impl.minecraft.client.util.DrawInternals;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -26,16 +27,13 @@ import java.util.Optional;
  * to allow using them without creating an instance of a screen. Most int values
  * in those methods have been replaced by floats to allow for more flexibility.</p>
  */
+@UtilityClass
 @SuppressWarnings("unused")
 @Environment(EnvType.CLIENT)
 public class DrawUtil {
 
     @Deprecated
     public static final Screen FAKE_SCREEN = getFakeScreen();
-
-    private DrawUtil() {
-        throw new UnsupportedOperationException();
-    }
 
     public static Screen getFakeScreen() {
         return DrawInternals.getFakeScreen();
